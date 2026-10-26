@@ -1,141 +1,60 @@
-# HƯỚNG DẪN SỬ DỤNG BACKEND FASTAPI (LTWEB - NHÓM 12)
+# Backend PHP thuần
 
-Backend REST API hoàn chỉnh cho dự án sàn thương mại điện tử, được xây dựng bằng **FastAPI**, **SQLAlchemy ORM**, **MySQL** và **JWT Authentication**.
+REST API dùng PHP 8.1+, PDO, MySQL và JWT. Cơ sở dữ liệu dùng chung schema có sẵn tại `DATABASE/schema.sql`.
 
----
+## Yêu cầu
 
-## 1. Yêu cầu hệ thống
-- Python 3.10+ (Đã cài sẵn Python 3.12 trên máy)
-- MySQL Server 5.7+ hoặc 8.0+ (qua XAMPP, WampServer, Laragon hoặc MySQL Installer độc lập)
+- PHP 8.1+ với extension `pdo_mysql`, `mbstring` và `iconv`.
+- MySQL Server 5.7+ hoặc 8.0+.
 
----
+## Cấu hình và chạy
 
-## 2. Cấu trúc thư mục Backend
+1. Khởi động MySQL và import `DATABASE/schema.sql`; dữ liệu mẫu có thể nạp bằng `DATABASE/seed.sql`.
+2. Nếu chưa có cấu hình riêng, sao chép mẫu: `Copy-Item BACKEND\.env.example BACKEND\.env`.
+3. Cấu hình `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD` theo MySQL. Thay `JWT_SECRET` bằng chuỗi bí mật ngẫu nhiên tối thiểu 32 ký tự; không dùng giá trị mẫu trong production. Đặt `CORS_ORIGINS` phù hợp với địa chỉ Frontend. Giữ file `.env` ở máy cá nhân, không commit.
+4. Từ thư mục gốc chạy:
 
-```text
-BACKEND/
-├── app/
-│   ├── models/             # SQLAlchemy Models (User, Category, Product, CartItem, Order, OrderItem)
-│   ├── schemas/            # Pydantic Schemas validate dữ liệu đầu vào & đầu ra
-│   ├── routers/            # Các module API endpoints
-│   │   ├── auth.py         # /api/auth (Đăng ký, Đăng nhập, Hồ sơ, Đổi mật khẩu)
-│   │   ├── categories.py   # /api/categories (Danh mục sản phẩm)
-│   │   ├── products.py     # /api/products (Sản phẩm, tìm kiếm, lọc giá, phân trang)
-│   │   ├── cart.py         # /api/cart (Giỏ hàng người dùng)
-│   │   ├── orders.py       # /api/orders (Đặt hàng checkout, xem lịch sử đơn)
-│   │   └── admin.py        # /api/admin (Dashboard thống kê, quản lý user & đơn hàng)
-│   ├── utils/              # Tiện ích mã hóa mật khẩu bcrypt, JWT token, slugify
-│   ├── config.py           # Cấu hình biến môi trường
-│   ├── database.py         # Kết nối SQLAlchemy & Engine MySQL
-│   ├── dependencies.py     # Dependency phân quyền User & Admin
-│   └── main.py             # FastAPI App chính & CORS Middleware
-├── seed_data.py            # Script nạp dữ liệu mẫu & tạo bảng tự động
-├── test_api.py             # Bộ test tự động 16/16 trường hợp kiểm thử
-├── run.py                  # Script khởi động server nhanh
-├── requirements.txt        # Danh sách thư viện phụ thuộc
-└── .env                    # File cấu hình biến môi trường cục bộ
+```powershell
+php -S 127.0.0.1:8000 -t BACKEND\public BACKEND\public\router.php
 ```
 
----
+Kiểm tra kết nối bằng `GET http://127.0.0.1:8000/api/health`.
 
-## 3. Cài đặt và Chạy Server
+## Tài khoản admin đầu tiên
 
-### Bước 1: Khởi động MySQL Server
-- Mở **XAMPP Control Panel** và bấm **Start** tại mục **MySQL** (hoặc mở dịch vụ MySQL trên máy của bạn).
+Đăng ký qua API sẽ tạo tài khoản customer. Để cấp quyền quản trị cho tài khoản đáng tin cậy đầu tiên, chạy trong MySQL:
 
-### Bước 2: Nạp dữ liệu mẫu ban đầu (Seed Data)
-Mở terminal trong thư mục `BACKEND` và chạy:
-```bash
-python seed_data.py
-```
-> Script sẽ tự động:
-> 1. Tạo database `ltweb_nhom12` trên MySQL (nếu chưa có).
-> 2. Khởi tạo toàn bộ cấu trúc bảng: `users`, `categories`, `products`, `cart_items`, `orders`, `order_items`.
-> 3. Tạo tài khoản mẫu:
->    - **Admin**: username `admin` | mật khẩu `admin123`
->    - **Khách hàng**: username `customer` | mật khẩu `customer123`
-> 4. Tạo các danh mục & sản phẩm mẫu khớp giao diện Shop.
-
-*(Ngoài ra bạn cũng có thể import trực tiếp file [DATABASE/schema.sql](../DATABASE/schema.sql) và [DATABASE/seed.sql](../DATABASE/seed.sql) vào phpMyAdmin)*
-
-### Bước 3: Khởi động FastAPI Server
-```bash
-python run.py
-```
-Hoặc dùng uvicorn trực tiếp:
-```bash
-uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+```sql
+UPDATE users SET role = 'admin' WHERE username = 'ten-dang-nhap';
 ```
 
----
+Không cấp quyền admin tự động cho người đăng ký công khai.
 
-## 4. Tài liệu API tương tác (Swagger UI / ReDoc)
-Sau khi server chạy, bạn mở trình duyệt:
-- **Swagger UI (Test trực tiếp)**: [http://localhost:8000/docs](http://localhost:8000/docs)
-- **ReDoc**: [http://localhost:8000/redoc](http://localhost:8000/redoc)
+## API
 
----
+Mọi request và response dùng JSON. API cần đăng nhập nhận header `Authorization: Bearer <access_token>`.
 
-## 5. Tổng hợp danh sách REST API Endpoints
+| Nhóm | Endpoint |
+| --- | --- |
+| Xác thực | `POST /api/auth/register`, `POST /api/auth/login`, `GET/PUT /api/auth/me`, `POST /api/auth/change-password` |
+| Sản phẩm | `GET/POST /api/products`, `GET/PUT/DELETE /api/products/{id}`, tìm kiếm `q`, lọc danh mục/giá, sắp xếp và phân trang |
+| Danh mục | `GET/POST /api/categories`, `GET/PUT/DELETE /api/categories/{id}` |
+| Giỏ hàng | `GET/POST/DELETE /api/cart`, `PUT/DELETE /api/cart/{cart_item_id}` |
+| Đơn hàng | `GET/POST /api/orders`, `GET /api/orders/{id}`, `PUT /api/orders/{id}/cancel` |
+| Quản trị | `GET /api/admin/stats`, `GET /api/admin/users`, `PUT /api/admin/users/{id}/role`, `GET /api/admin/orders`, `PUT /api/admin/orders/{id}/status` |
 
-### 🔐 1. Authentication & Tài khoản (`/api/auth`)
-| Phương thức | Endpoint | Quyền | Mô tả |
-| :--- | :--- | :--- | :--- |
-| `POST` | `/api/auth/register` | Public | Đăng ký tài khoản mới (tài khoản đầu tiên tự động thành Admin) |
-| `POST` | `/api/auth/login` | Public | Đăng nhập nhận JWT Access Token |
-| `GET` | `/api/auth/me` | User | Xem thông tin tài khoản hiện tại |
-| `PUT` | `/api/auth/me` | User | Cập nhật họ tên, số điện thoại, địa chỉ |
-| `POST` | `/api/auth/change-password` | User | Đổi mật khẩu |
+Payload được kiểm tra trước khi xử lý; truy vấn dùng prepared statements. Thanh toán đơn từ giỏ hàng cập nhật tồn kho trong transaction. Các endpoint admin yêu cầu tài khoản có role `admin`.
 
-### 📁 2. Danh mục sản phẩm (`/api/categories`)
-| Phương thức | Endpoint | Quyền | Mô tả |
-| :--- | :--- | :--- | :--- |
-| `GET` | `/api/categories` | Public | Lấy tất cả danh mục kèm số lượng sản phẩm |
-| `GET` | `/api/categories/{id_or_slug}` | Public | Chi tiết danh mục |
-| `POST` | `/api/categories` | Admin | Tạo danh mục mới |
-| `PUT` | `/api/categories/{id}` | Admin | Sửa danh mục |
-| `DELETE` | `/api/categories/{id}` | Admin | Xóa danh mục |
+## Đối chiếu 11 hạng mục
 
-### 💻 3. Sản phẩm (`/api/products`)
-| Phương thức | Endpoint | Quyền | Mô tả |
-| :--- | :--- | :--- | :--- |
-| `GET` | `/api/products` | Public | Lấy danh sách sản phẩm (có tìm kiếm `q`, lọc `category_id`, khoảng giá `min_price`/`max_price`, sắp xếp, phân trang) |
-| `GET` | `/api/products/{id_or_slug}` | Public | Xem chi tiết 1 sản phẩm |
-| `POST` | `/api/products` | Admin | Thêm sản phẩm mới |
-| `PUT` | `/api/products/{id}` | Admin | Cập nhật thông tin sản phẩm |
-| `DELETE` | `/api/products/{id}` | Admin | Xóa sản phẩm |
-
-### 🛒 4. Giỏ hàng (`/api/cart`)
-| Phương thức | Endpoint | Quyền | Mô tả |
-| :--- | :--- | :--- | :--- |
-| `GET` | `/api/cart` | User | Xem giỏ hàng của tài khoản đang đăng nhập |
-| `POST` | `/api/cart` | User | Thêm sản phẩm vào giỏ (tự động cộng dồn số lượng) |
-| `PUT` | `/api/cart/{cart_item_id}` | User | Sửa số lượng sản phẩm trong giỏ |
-| `DELETE` | `/api/cart/{cart_item_id}` | User | Xóa 1 sản phẩm khỏi giỏ |
-| `DELETE` | `/api/cart` | User | Xóa toàn bộ giỏ hàng |
-
-### 📦 5. Đơn hàng & Thanh toán (`/api/orders`)
-| Phương thức | Endpoint | Quyền | Mô tả |
-| :--- | :--- | :--- | :--- |
-| `POST` | `/api/orders` | User | Tạo đơn hàng (Checkout) - Tự động tính tiền, trừ kho, xóa giỏ hàng |
-| `GET` | `/api/orders` | User | Lịch sử đơn hàng của tôi (phân trang) |
-| `GET` | `/api/orders/{order_id}` | User/Admin | Chi tiết đơn hàng |
-| `PUT` | `/api/orders/{order_id}/cancel` | User/Admin | Hủy đơn hàng (Chỉ khi status = `pending`, tự động hoàn lại tồn kho) |
-
-### 🛠️ 6. Quản trị viên (`/api/admin`)
-| Phương thức | Endpoint | Quyền | Mô tả |
-| :--- | :--- | :--- | :--- |
-| `GET` | `/api/admin/stats` | Admin | Bảng thống kê doanh thu, đơn hàng, người dùng, sản phẩm sắp hết hàng |
-| `GET` | `/api/admin/users` | Admin | Quản lý danh sách người dùng (tìm kiếm, phân trang) |
-| `PUT` | `/api/admin/users/{user_id}/role` | Admin | Phân quyền Admin / Customer hoặc khóa tài khoản |
-| `GET` | `/api/admin/orders` | Admin | Xem toàn bộ đơn hàng trong hệ thống (lọc theo status) |
-| `PUT` | `/api/admin/orders/{order_id}/status` | Admin | Cập nhật trạng thái đơn (`pending`, `confirmed`, `shipping`, `completed`, `cancelled`) |
-
----
-
-## 6. Chạy Kiểm Thử Tự Động (Unit & Integration Tests)
-Để xác nhận toàn bộ hệ thống API hoạt động hoàn hảo:
-```bash
-python test_api.py
-```
-Kết quả kiểm tra: **16/16 Test Cases Đạt 100%**.
+1. **FastAPI:** không áp dụng cho phiên bản này vì backend đã được chuyển sang PHP theo yêu cầu; điểm vào PHP nằm tại `BACKEND/public/index.php`.
+2. **Kết nối database:** PDO MySQL tại `BACKEND/src/bootstrap.php`; `GET /api/health` kiểm tra kết nối.
+3. **REST API:** định tuyến JSON cho tất cả endpoint trong `BACKEND/src/Api.php`.
+4. **Đăng ký/đăng nhập:** `POST /api/auth/register` và `/api/auth/login`.
+5. **Sản phẩm:** danh sách, tìm kiếm, lọc, phân trang và CRUD admin.
+6. **Danh mục:** danh sách, chi tiết và CRUD admin.
+7. **Giỏ hàng:** xem, thêm, đổi số lượng và xóa.
+8. **Đơn hàng:** checkout, lịch sử, chi tiết, hủy và hoàn kho.
+9. **Admin:** thống kê, quản lý user, role và trạng thái đơn.
+10. **Authentication:** mật khẩu được hash; JWT Bearer token và quyền admin được xác thực.
+11. **Validation:** JSON, email, độ dài, số lượng, giá, trạng thái và dữ liệu checkout được kiểm tra.
