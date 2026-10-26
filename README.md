@@ -1,6 +1,10 @@
 
 # LTWEB-NHOM12 - WEBSITE BÁN HÀNG
 
+## Backend
+
+Backend của dự án được viết bằng PHP thuần, dùng PDO và MySQL. Xem hướng dẫn cài đặt, cấu hình và danh sách API tại [BACKEND/README.md](./BACKEND/README.md).
+
 ## 1. Phân chia công việc cho 6 thành viên
 
 ```text
@@ -120,4 +124,3 @@ LTWEB-NHOM12/
 - Thành viên 2 thống nhất dữ liệu giỏ hàng và đơn hàng với thành viên 4.
 - Thành viên 5 thống nhất API quản trị với thành viên 4 và thành viên 6.
 - Thành viên 6 quản lý tích hợp và tài liệu, không tự nhận toàn bộ phần code của các thành viên khác.
-
