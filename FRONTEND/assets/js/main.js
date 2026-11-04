@@ -29,14 +29,8 @@
  *   <a href="pages/admin/index.html" data-auth="admin" style="display:none;">Quản trị</a>
  */
 
-document.addEventListener('DOMContentLoaded', async () => {
-    // 1. Đồng bộ session với server (xác minh token/session còn hợp lệ không)
-    await syncSession();
-
-    // 2. Cập nhật giao diện header theo kết quả
-    updateAuthUI();
-
-    // 3. Gắn sự kiện nút đăng xuất (nếu có trên trang)
+document.addEventListener('DOMContentLoaded', () => {
+    // syncSession + updateAuthUI chạy trong auth.js (nhúng auth.js trước main.js)
     const btnLogout = document.getElementById('btn-logout');
     if (btnLogout) {
         btnLogout.addEventListener('click', async () => {

@@ -9,7 +9,29 @@
  *   GET  /BACKEND/api/auth.php?action=me
  */
 
-const API_BASE = '/BACKEND/api/auth.php';
+/** URL API auth — hoạt động khi chạy qua XAMPP (…/LTWEB-NHOM12/FRONTEND/…) */
+function getAuthApiBase() {
+    const path = window.location.pathname.replace(/\\/g, '/');
+    const marker = '/FRONTEND/';
+    const idx = path.indexOf(marker);
+    if (idx !== -1) {
+        return `${path.slice(0, idx)}/BACKEND/api/auth.php`;
+    }
+    return '/BACKEND/api/auth.php';
+}
+
+function getFrontendIndexHref() {
+    const path = window.location.pathname.replace(/\\/g, '/');
+    const marker = '/FRONTEND/';
+    const idx = path.indexOf(marker);
+    if (idx !== -1) {
+        return `${path.slice(0, idx + marker.length)}index.html`;
+    }
+    if (/\/pages\/(users|admin)\//.test(path)) {
+        return '../../index.html';
+    }
+    return 'index.html';
+}
 
 // ============================================================
 // TIỆN ÍCH CHUNG
@@ -212,7 +234,7 @@ function initLoginForm() {
         btn.classList.add('loading');
         btn.disabled = true;
 
-        const result = await apiCall(`${API_BASE}?action=login`, {
+        const result = await apiCall(`${getAuthApiBase()}?action=login`, {
             method: 'POST',
             body: JSON.stringify({ email, password }),
         });
@@ -255,7 +277,7 @@ function initRegisterForm() {
         btn.classList.add('loading');
         btn.disabled = true;
 
-        const result = await apiCall(`${API_BASE}?action=register`, {
+        const result = await apiCall(`${getAuthApiBase()}?action=register`, {
             method: 'POST',
             body: JSON.stringify({ name, email, password, password_confirmation: confirm }),
         });
@@ -286,12 +308,9 @@ function initRegisterForm() {
  * Gọi hàm này từ bất kỳ trang nào có nút logout
  */
 async function logout() {
-    await apiCall(`${API_BASE}?action=logout`, { method: 'POST' });
+    await apiCall(`${getAuthApiBase()}?action=logout`, { method: 'POST' });
     clearUser();
-    // Tìm đường về index.html tương đối từ vị trí trang hiện tại
-    const depth = window.location.pathname.split('/').filter(Boolean).length;
-    const base  = depth <= 1 ? './' : '../'.repeat(depth - 1);
-    window.location.href = base + 'index.html';
+    window.location.href = getFrontendIndexHref();
 }
 
 // ============================================================
@@ -304,7 +323,7 @@ async function logout() {
  * Gọi khi load trang để đồng bộ trạng thái
  */
 async function syncSession() {
-    const result = await apiCall(`${API_BASE}?action=me`, { method: 'GET' });
+    const result = await apiCall(`${getAuthApiBase()}?action=me`, { method: 'GET' });
     if (result.ok && result.data.user) {
         saveUser(result.data.user);
     } else {
@@ -349,10 +368,11 @@ function updateAuthUI() {
 // KHỞI CHẠY KHI DOM SẴN SÀNG
 // ============================================================
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     initTogglePassword();
     initPasswordStrength();
     initLoginForm();
     initRegisterForm();
+    await syncSession();
     updateAuthUI();
 });
