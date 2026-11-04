@@ -288,7 +288,10 @@ function initRegisterForm() {
 async function logout() {
     await apiCall(`${API_BASE}?action=logout`, { method: 'POST' });
     clearUser();
-    window.location.href = '/FRONTEND/index.html';
+    // Tìm đường về index.html tương đối từ vị trí trang hiện tại
+    const depth = window.location.pathname.split('/').filter(Boolean).length;
+    const base  = depth <= 1 ? './' : '../'.repeat(depth - 1);
+    window.location.href = base + 'index.html';
 }
 
 // ============================================================
