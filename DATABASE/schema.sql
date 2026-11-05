@@ -100,3 +100,41 @@ CREATE TABLE IF NOT EXISTS `order_items` (
     FOREIGN KEY (`product_id`) REFERENCES `products`(`id`) ON DELETE SET NULL,
     INDEX `idx_order_items_order` (`order_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Additional modules from main; foreign keys match the signed core IDs.
+CREATE TABLE IF NOT EXISTS product_images (
+    id          INT AUTO_INCREMENT PRIMARY KEY,
+    product_id  INT  NOT NULL,
+    image_path  VARCHAR(255)  NOT NULL,
+    sort_order  TINYINT NOT NULL DEFAULT 0,
+    created_at  TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_image_product
+        FOREIGN KEY (product_id) REFERENCES products(id)
+        ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Bang bai viet / banner (Thanh vien 5 se dung)
+CREATE TABLE IF NOT EXISTS posts (
+    id          INT AUTO_INCREMENT PRIMARY KEY,
+    user_id     INT  NOT NULL,
+    title       VARCHAR(255)  NOT NULL,
+    slug        VARCHAR(270)  NOT NULL UNIQUE,
+    content     LONGTEXT      NULL,
+    thumbnail   VARCHAR(255)  NULL,
+    status      ENUM('draft','published') NOT NULL DEFAULT 'draft',
+    created_at  TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at  TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_post_user
+        FOREIGN KEY (user_id) REFERENCES users(id)
+        ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS banners (
+    id          INT AUTO_INCREMENT PRIMARY KEY,
+    title       VARCHAR(255)  NOT NULL,
+    image_path  VARCHAR(255)  NOT NULL,
+    link        VARCHAR(255)  NULL,
+    sort_order  TINYINT NOT NULL DEFAULT 0,
+    is_active   TINYINT(1)    NOT NULL DEFAULT 1,
+    created_at  TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

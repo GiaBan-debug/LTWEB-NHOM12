@@ -1,5 +1,11 @@
 # Backend PHP thuần
 
+## Tích hợp với main
+
+Backend chạy qua `public/index.php` và `src/Api.php`; các API sản phẩm và danh mục dùng cùng kết nối PDO, JWT, validation và schema với giỏ hàng, đơn hàng và admin. Các entrypoint PHP cũ trong `api/` và các model tương ứng đã được thay bằng router này để tránh chạy hai bộ API có schema khác nhau. `services/UploadService.php` được giữ cho module upload, chưa được nối vào REST API JSON.
+
+`DATABASE/schema.sql` giữ các bảng cốt lõi của backend và bổ sung `product_images`, `posts`, `banners` từ main. ID và khóa ngoại của các bảng bổ sung dùng `INT` có dấu để khớp `users.id` và `products.id`. Seed giữ dữ liệu PC khớp giao diện. Script schema dùng cho database mới; `CREATE TABLE IF NOT EXISTS` không chuyển đổi database đã import schema cũ của main. Không import seed mới trực tiếp vào database cũ; cần sao lưu và chuyển đổi dữ liệu trước.
+
 REST API dùng PHP 8.1+, PDO, MySQL và JWT. Cơ sở dữ liệu dùng chung schema có sẵn tại `DATABASE/schema.sql`.
 
 ## Yêu cầu
