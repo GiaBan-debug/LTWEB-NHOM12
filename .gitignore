@@ -1,7 +1,17 @@
-﻿.env
+.env
 .env.*
 !.env.example
 .DS_Store
 Thumbs.db
 /vendor/
 /node_modules/
+
+# Python cache & databases
+__pycache__/
+*.py[cod]
+*$py.class
+*.db
+*.sqlite3
+.pytest_cache/
+.venv/
+venv/
