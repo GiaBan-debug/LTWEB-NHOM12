@@ -106,7 +106,7 @@ CREATE TABLE IF NOT EXISTS product_images (
     id          INT AUTO_INCREMENT PRIMARY KEY,
     product_id  INT  NOT NULL,
     image_path  VARCHAR(255)  NOT NULL,
-    sort_order  TINYINT NOT NULL DEFAULT 0,
+    sort_order  TINYINT UNSIGNED NOT NULL DEFAULT 0,
     created_at  TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_image_product
         FOREIGN KEY (product_id) REFERENCES products(id)
@@ -134,7 +134,7 @@ CREATE TABLE IF NOT EXISTS banners (
     title       VARCHAR(255)  NOT NULL,
     image_path  VARCHAR(255)  NOT NULL,
     link        VARCHAR(255)  NULL,
-    sort_order  TINYINT NOT NULL DEFAULT 0,
+    sort_order  TINYINT UNSIGNED NOT NULL DEFAULT 0,
     is_active   TINYINT(1)    NOT NULL DEFAULT 1,
     created_at  TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
