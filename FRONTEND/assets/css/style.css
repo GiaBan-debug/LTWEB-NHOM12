@@ -99,7 +99,9 @@ body{
     padding:5px;
     margin:10px 10px;
     width: 110px;
-    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 .deal-bottom a{
     color:white;
@@ -147,18 +149,6 @@ body{
     font-weight: bold;
     font-size:18px;
 }
-.buy-item{
-    border:none;
-    border-radius: 15px;
-    cursor: pointer;
-    font-size: 13px;
-    gap:10px;
-    padding:10px;
-    background:rgb(245, 75, 75);
-    font-weight: bold;
-    color:white;
-    text-align:center
-}
 .card-bottom{
     display:flex;
     justify-content: space-between;
@@ -205,7 +195,7 @@ img {
     .card{
 flex: 1 1 calc(50% - 15px);
     }
-    .footer-inner{
+    .footer {
         grid-template-columns: repeat(2, 1fr);
 }
 }
@@ -213,7 +203,6 @@ flex: 1 1 calc(50% - 15px);
     header {
         padding: 15px;
     }
-    body { padding: 0 10px; }
     .Menu {
         gap: 15px;
         flex-wrap: wrap;
@@ -241,7 +230,7 @@ flex: 1 1 calc(50% - 15px);
         flex: 0 0 80%;                
         scroll-snap-align: start;
     }
-.footer-inner {
+.footer {
     grid-template-columns: 1fr;
 }
 }
