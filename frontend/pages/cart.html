@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Giỏ hàng</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../../assets/css/cart.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="../index.html">TechShop</a>
+      <nav class="nav" aria-label="Điều hướng chính">
+        <a href="../index.html">Trang chủ</a>
+        <a href="orders.html">Đơn hàng</a>
+        <a href="cart.html" aria-current="page"
+          >Giỏ hàng <span id="nav-count" class="badge" hidden>0</span></a
+        >
+      </nav>
+    </header>
+
+    <main class="container">
+      <h1 class="page-title">Giỏ hàng của bạn</h1>
+
+      <div id="alert" class="alert" role="alert" hidden></div>
+      <p id="cart-loading" class="state">Đang tải giỏ hàng…</p>
+
+      <section id="cart-empty" class="state state--empty" hidden>
+        <p class="state__title">Giỏ hàng đang trống</p>
+        <p>Chọn vài sản phẩm bạn thích rồi quay lại đây để đặt hàng.</p>
+        <a class="btn btn--primary" href="../index.html">Tiếp tục mua sắm</a>
+      </section>
+
+      <div id="cart-content" class="cart-layout" hidden>
+        <ul
+          id="cart-list"
+          class="cart-list"
+          aria-label="Sản phẩm trong giỏ"
+        ></ul>
+
+        <aside class="summary" aria-label="Tóm tắt đơn hàng">
+          <h2 class="summary__title">Tóm tắt đơn hàng</h2>
+          <dl class="summary__rows">
+            <div>
+              <dt>Số sản phẩm</dt>
+              <dd id="sum-items">0</dd>
+            </div>
+            <div class="summary__total">
+              <dt>Tổng tiền</dt>
+              <dd id="sum-total">0 ₫</dd>
+            </div>
+          </dl>
+
+          <form id="checkout-form" class="form" novalidate>
+            <h3 class="form__title">Thông tin giao hàng</h3>
+            <label class="field"
+              >Họ và tên
+              <input
+                name="receiver_name"
+                type="text"
+                autocomplete="name"
+                maxlength="100"
+                required
+              />
+              <small
+                class="field__error"
+                data-error-for="receiver_name"
+              ></small>
+            </label>
+            <label class="field"
+              >Số điện thoại
+              <input
+                name="phone"
+                type="tel"
+                autocomplete="tel"
+                inputmode="tel"
+                maxlength="15"
+                required
+              />
+              <small class="field__error" data-error-for="phone"></small>
+            </label>
+            <label class="field"
+              >Địa chỉ nhận hàng
+              <input
+                name="address"
+                type="text"
+                autocomplete="street-address"
+                maxlength="255"
+                required
+              />
+              <small class="field__error" data-error-for="address"></small>
+            </label>
+            <label class="field"
+              >Ghi chú (không bắt buộc)
+              <textarea name="note" rows="2" maxlength="500"></textarea>
+              <small class="field__error" data-error-for="note"></small>
+            </label>
+            <button
+              id="btn-order"
+              class="btn btn--primary btn--block"
+              type="submit"
+            >
+              Đặt hàng
+            </button>
+          </form>
+        </aside>
+      </div>
+    </main>
+
+    <script src="../../assets/js/cart.js" defer></script>
+  </body>
+</html>
