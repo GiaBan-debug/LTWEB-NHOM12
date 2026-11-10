@@ -1,0 +1,73 @@
+/* responsive.css - Media queries (tablet <=992px, mobile <=600px)
+   LƯU Ý: phải được link SAU CÙNG để ghi đè các file CSS khác */
+
+@media (max-width: 992px) {
+    .topbar {
+        flex-wrap: wrap;        
+        gap: 15px;
+    }
+    .search {
+        order: 3;               
+        width: 100%;
+    }
+    #search-input {
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .deal-list {
+        flex-wrap: wrap;
+    }
+    .card{
+flex: 1 1 calc(50% - 15px);
+    }
+    .footer-inner{
+        grid-template-columns: repeat(2, 1fr);
+}
+}
+
+@media (max-width: 600px) {
+    header {
+        padding: 15px;
+    }
+    body { padding: 0 10px; }
+    .Menu {
+        gap: 15px;
+        flex-wrap: wrap;
+        font-size: 14px;
+    }
+    .hotline-bar {
+        flex-direction: column;      
+        align-items: flex-start;
+        gap: 12px;
+        border-radius: 20px;
+    }
+    .deal {
+        margin: 20px 10px;
+        padding: 12px;
+    }
+    .deal-title h2 {
+        font-size: 18px;
+    }
+    .deal-list {
+        flex-wrap: nowrap;            
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+    }
+    .card {
+        flex: 0 0 80%;                
+        scroll-snap-align: start;
+    }
+.footer-inner {
+    grid-template-columns: 1fr;
+}
+}
+
+/* ---------- Trang sản phẩm / giỏ hàng ---------- */
+@media (max-width: 992px) {
+    .detail { grid-template-columns: 1fr; }
+    #result-info { margin-left: 0; width: 100%; }
+}
+@media (max-width: 600px) {
+    #cart-drawer { width: 100%; }
+    .toolbar select { flex: 1; }
+}
