@@ -3,11 +3,37 @@
   "use strict";
 
   const USER_CACHE_KEY = "shop_user"; // không lưu mật khẩu
-  const inPages = /\/pages(?:\/|$)/i.test(location.pathname.replace(/\\/g, "/"));
-  const pagesPrefix = inPages ? "" : "pages/";
-  const homeHref = inPages ? "../index.html" : "index.html";
-  const apiBase = inPages ? "../../backend/api/" : "../backend/api/";
+  const L = {
+    login: "\u0110\u0103ng nh\u1eadp",
+    register: "\u0110\u0103ng k\u00fd",
+    hello: "Xin ch\u00e0o, ",
+    logout: "\u0110\u0103ng xu\u1ea5t",
+    error: "C\u00f3 l\u1ed7i x\u1ea3y ra, vui l\u00f2ng th\u1eed l\u1ea1i.",
+  };
 
+  function pathParts() {
+    const p = location.pathname.replace(/\\/g, "/");
+    const lower = p.toLowerCase();
+    const marker = "/frontend/";
+    const i = lower.lastIndexOf(marker);
+    let extra = 0;
+    if (i !== -1) {
+      extra = p.slice(i + marker.length).split("/").filter(Boolean).length - 1;
+      if (extra < 0) extra = 0;
+    } else if (/\/pages\//i.test(p)) {
+      extra = p.toLowerCase().includes("/pages/users/") ? 2 : 1;
+    }
+    const toFrontend = extra === 0 ? "" : "../".repeat(extra);
+    const pagesPrefix = extra === 0 ? "pages/" : extra === 1 ? "" : "../".repeat(extra - 1);
+    return {
+      homeHref: toFrontend + "index.html",
+      pagesPrefix,
+      apiBase: toFrontend + "../backend/api/",
+      adminHref: toFrontend + "../backend/admin/index.php",
+    };
+  }
+
+  const { homeHref, pagesPrefix, apiBase, adminHref } = pathParts();
   const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
   function apiUrl(file) {
@@ -18,6 +44,10 @@
     return String(s ?? "").replace(/[&<>"']/g, (c) =>
       ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c],
     );
+  }
+
+  function isAdmin(user) {
+    return String(user?.role || "").toLowerCase() === "admin";
   }
 
   function readCache() {
@@ -66,7 +96,7 @@
     }
     if (!res.ok || !data || data.success === false) {
       const err = new Error(
-        (data && data.message) || "Có lỗi xảy ra, vui lòng thử lại.",
+        (data && data.message) || L.error,
       );
       err.status = res.status;
       err.payload = data;
@@ -93,19 +123,30 @@
     return (
       '<a href="' +
       pagesPrefix +
-      'login.html">Đăng nhập</a> | ' +
+      "login.html\">" +
+      L.login +
+      "</a> | " +
       '<a href="' +
       pagesPrefix +
-      'register.html">Đăng ký</a>'
+      'register.html">' +
+      L.register +
+      "</a>"
     );
   }
 
   function userHtml(user) {
+    const adminLink = isAdmin(user)
+      ? '<a class="auth-admin" href="' + adminHref + '">Admin</a>'
+      : "";
     return (
-      '<span class="auth-user">Xin chào, ' +
+      '<span class="auth-user">' +
+      L.hello +
       escapeHtml(user.name) +
       "</span>" +
-      '<button type="button" class="btn-logout" id="btn-logout">Đăng xuất</button>'
+      adminLink +
+      '<button type="button" class="btn-logout" id="btn-logout">' +
+      L.logout +
+      "</button>"
     );
   }
 
@@ -132,8 +173,10 @@
     homeHref,
     pagesPrefix,
     apiUrl,
+    adminHref,
     escapeHtml,
     emailRe,
+    isAdmin,
     getCachedUser: readCache,
 
     async currentUser() {
@@ -148,12 +191,7 @@
     },
 
     async register({ name, email, password }) {
-      const res = await request("POST", "register.php", {
-        name,
-        email,
-        password,
-      });
-      return res;
+      return request("POST", "register.php", { name, email, password });
     },
 
     async login({ email, password }) {
@@ -178,7 +216,7 @@
         return homeHref;
       }
       if (!/^[a-z0-9._-]+\.html$/i.test(file)) return homeHref;
-      return (inPages ? "" : "pages/") + file;
+      return pagesPrefix + file;
     },
 
     setStatus(el, message, type) {
