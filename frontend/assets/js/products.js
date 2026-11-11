@@ -4,7 +4,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const loading = document.querySelector("#loading");
     const productCount = document.querySelector("#productCount");
 
-    const API_URL = "/LTWEB-NHOM12/BACKEND/api/products.php";
+    const API_URL = "/LTWEB-NHOM12/backend/api/products.php";
 
     let allProducts = [];
 
@@ -89,7 +89,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             const result = await response.json();
 
-            allProducts = result.data || [];
+            allProducts = result.data?.items || [];
 
             if (loading) {
                 loading.style.display = "none";
