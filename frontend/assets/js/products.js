@@ -1,8 +1,3 @@
-/* products.js - Danh sách sản phẩm, chi tiết sản phẩm, danh mục và giỏ hàng (lưu localStorage)
-   Dùng chung cho 3 trang trong pages/users/ (xác định bằng <body data-page="...">) */
-
-// TODO: điền URL API PHP của backend để lấy sản phẩm thật, ví dụ "../../../BACKEND/api/products.php"
-// Để rỗng thì dùng dữ liệu mẫu bên dưới.
 const API_URL = "";
 const IMG = "../../assets/images/";
 const CART_KEY = "cart";
@@ -22,7 +17,6 @@ const CATEGORIES = [
   ] },
 ];
 
-// Dữ liệu mẫu lấy từ 5 sản phẩm trên trang chủ. TODO: thay bằng dữ liệu từ API.
 const MO_TA = "Máy tính để bàn gaming. Liên hệ hotline 012.345.6789 để được tư vấn cấu hình.";
 const SAMPLE_PRODUCTS = [
   { id: 1, name: "PC TTG GAMING i5 12400F - 16GB DDR4 - RTX 5060 8GB (All NEW - Bảo hành 36 tháng)", category: "pc-gaming", price: 25280000, oldPrice: 27990000, image: "pc1.jpeg", stock: 10, description: MO_TA },
@@ -34,7 +28,6 @@ const SAMPLE_PRODUCTS = [
 
 let PRODUCTS = [];
 
-/* ---------- Hàm tiện ích ---------- */
 const $ = (s, r = document) => r.querySelector(s);
 const fmt = n => n.toLocaleString("vi-VN") + " VND";
 const plain = s => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/đ/g, "d").toLowerCase();
@@ -47,7 +40,6 @@ const catSlugs = slug => {
   return c ? [c.slug, ...(c.children || []).map(k => k.slug)] : [];
 };
 
-// Chuẩn hóa dữ liệu (chấp nhận cả oldPrice và old_price từ API PHP)
 const normalize = p => ({
   id: Number(p.id),
   name: p.name,
@@ -73,7 +65,6 @@ async function loadProducts() {
   return SAMPLE_PRODUCTS.map(normalize);
 }
 
-/* ---------- Thẻ sản phẩm (dùng lại class .card của products.css) ---------- */
 function cardHTML(p) {
   const d = discount(p), out = p.stock <= 0, url = `product-detail.html?id=${p.id}`;
   return `<div class="card">
@@ -154,14 +145,12 @@ function onClick(e) {
   const d = t.dataset;
   if ("cartToggle" in d) { e.preventDefault(); return toggleCart(true); }
   if (t.id === "cart-close" || t.id === "cart-overlay") return toggleCart(false);
-  // TODO: nối với trang/API thanh toán của backend
   if (t.id === "btn-checkout") return alert("Chức năng thanh toán sẽ được nối với backend.");
 
   const id = Number(d.add || d.buy || d.inc || d.dec || d.del);
   if (d.add || d.buy) {
     const p = PRODUCTS.find(x => x.id === id);
     if (!p || p.stock <= 0) return;
-    // Ô số lượng chỉ áp dụng cho nút ở trang chi tiết (có thuộc tính data-detail)
     addToCart(p, "detail" in d ? Math.max(1, Number($("#qty")?.value) || 1) : 1);
     if (d.buy) toggleCart(true); else toast("Đã thêm vào giỏ hàng");
     return;
@@ -197,7 +186,7 @@ function pageProducts() {
   render();
 }
 
-/* ---------- Trang chi tiết sản phẩm (?id=...) ---------- */
+/* ---------- Trang chi tiết sản phẩm  ---------- */
 function pageDetail() {
   const id = Number(new URLSearchParams(location.search).get("id"));
   const p = PRODUCTS.find(x => x.id === id), box = $("#product-detail");
