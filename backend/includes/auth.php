@@ -3,9 +3,24 @@
 
 declare(strict_types=1);
 
-if (session_status() === PHP_SESSION_NONE) {
+/** Cookie session dùng chung cho mọi API (path=/). */
+function startAppSession(): void
+{
+    if (session_status() !== PHP_SESSION_NONE) {
+        return;
+    }
+    $secure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off');
+    session_set_cookie_params([
+        'lifetime' => 0,
+        'path'     => '/',
+        'secure'   => $secure,
+        'httponly' => true,
+        'samesite' => 'Lax',
+    ]);
     session_start();
 }
+
+startAppSession();
 
 /** Trả về thông tin user đang đăng nhập, hoặc null */
 function getCurrentUser(): ?array
