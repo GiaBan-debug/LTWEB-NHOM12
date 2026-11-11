@@ -1,16 +1,12 @@
-/* home.css - Trang chủ: hotline bar, ảnh cover, khu vực deal hot */
-
 .cover {
     position: relative;
     
 }
-
 .cover img{
     width: 100%;
     height: auto;
     
 }
-
 .hotline-bar{
     display: flex;
     align-items: center;
@@ -19,7 +15,6 @@
     background-color: #f0f0f0;
     justify-content: right;
 }
-
 .info-item{
     display:flex;
     align-items: center;
@@ -27,7 +22,6 @@
     text-decoration: none;
     color:#111;
 }
-
 .icon-circle{
     width: 44px;
     background:white;
@@ -39,30 +33,23 @@
     justify-content: center;
     font-size: 22px;
 }
-
 .deal{
     background: linear-gradient(135deg, #4f6cf0, #5ac8fa, #c58af9);
     border-radius: 20px;
     padding:20px;
-
-
 }
-
 .deal-color{
     background-color: #f0f0f0;
 }
-
 .deal-title h2{
     color:yellow;
     font-weight: bold;
     padding-left: 10px;
 }
-
 .deal-list{
     display:flex;
     gap:15px;
 }
-
 .deal-bottom{
     background-color: red;
     border:1.5px solid red;
@@ -73,7 +60,6 @@
     width: 110px;
     text-align: center;
 }
-
 .deal-bottom a{
     color:white;
     text-decoration: none;

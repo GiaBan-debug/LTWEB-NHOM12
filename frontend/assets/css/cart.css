@@ -56,7 +56,9 @@ body.cart-open { overflow: hidden; }
     padding: 15px 20px;
     border-bottom: 1px solid #e2e8f0;
 }
-.cart-head h3 { margin: 0; }
+.cart-head h3 { 
+    margin: 0; 
+}
 #cart-close {
     border: none;
     background: none;
@@ -64,8 +66,11 @@ body.cart-open { overflow: hidden; }
     line-height: 1;
     cursor: pointer;
 }
-#cart-items { flex: 1; overflow-y: auto; padding: 10px 20px; }
-
+#cart-items { 
+    flex: 1; 
+    overflow-y: auto; 
+    padding: 10px 20px; 
+}
 .cart-item {
     display: flex;
     gap: 12px;
@@ -80,7 +85,9 @@ body.cart-open { overflow: hidden; }
     border-radius: 8px;
     background: #f8fafc;
 }
-.cart-info { flex: 1; }
+.cart-info { 
+    flex: 1; 
+}
 .cart-name {
     margin: 0 0 4px;
     font-size: 14px;
@@ -90,8 +97,16 @@ body.cart-open { overflow: hidden; }
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
-.cart-price { color: red; font-weight: bold; font-size: 14px; }
-.cart-qty { display: flex; align-items: center; gap: 10px; margin-top: 6px; }
+.cart-price { 
+    color: red; 
+    font-weight: bold; 
+    font-size: 14px; 
+}
+.cart-qty { 
+    display: flex; 
+    align-items: center; 
+    gap: 10px; margin-top: 6px; 
+}
 .cart-qty button {
     width: 26px;
     height: 26px;
@@ -107,10 +122,19 @@ body.cart-open { overflow: hidden; }
     color: #64748b;
     cursor: pointer;
 }
-
-.cart-foot { padding: 15px 20px; border-top: 1px solid #e2e8f0; }
-.cart-total { display: flex; justify-content: space-between; margin-bottom: 12px; }
-.cart-total strong { color: red; font-size: 18px; }
+.cart-foot { 
+    padding: 15px 20px; 
+    border-top: 1px solid #e2e8f0; 
+}
+.cart-total { 
+    display: flex; 
+    justify-content: space-between; 
+    margin-bottom: 12px; 
+}
+.cart-total strong { 
+    color: red; 
+    font-size: 18px; 
+}
 .btn-checkout {
     width: 100%;
     border: none;
@@ -122,7 +146,6 @@ body.cart-open { overflow: hidden; }
     font-family: inherit;
     cursor: pointer;
 }
-
 #toast {
     position: fixed;
     bottom: 30px;
@@ -137,4 +160,7 @@ body.cart-open { overflow: hidden; }
     transition: opacity 0.25s, transform 0.25s;
     z-index: 3000;
 }
-#toast.show { opacity: 1; transform: translate(-50%, 0); }
+#toast.show { 
+    opacity: 1; 
+    transform: translate(-50%, 0); 
+}

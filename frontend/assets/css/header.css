@@ -3,7 +3,6 @@ header {
     padding: 25px;
 
 }
-
 .topbar {
     display: flex;
     justify-content: space-between;
@@ -11,18 +10,15 @@ header {
     padding-bottom: 20px;
     border-bottom: 1px solid #cbd5e1;
 }
-
 .brand {
     display: flex;
     align-items: center;
     gap: 10px;
 }
-
 .brand img {
     width: 50px;
     height: auto;
 }
-
 .namelogo {
     margin: 0;
     color: #2563eb;
@@ -34,13 +30,11 @@ header {
     padding: 8px 12px;
     border-radius: 12px;
 }
-
 .Menu {
     display: flex;
     align-items: center;
     gap: 30px;
 }
-
 .Menu a {
     color: #334155;
     text-decoration: none;

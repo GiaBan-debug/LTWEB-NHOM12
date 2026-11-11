@@ -1,12 +1,9 @@
-/* products.css - Thẻ sản phẩm (card): ảnh, tên, giá, nút thêm giỏ */
-
 .card{
     flex:1;
     background:white;
     border-radius:20px;
     padding:20px;
 }
-
 .card-name{
     display:-webkit-box;
     -webkit-line-clamp: 2;
@@ -14,18 +11,15 @@
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
-
 .shop-icon{
     width:50px;
     display:flex;
     margin-left: -20px;
 }
-
 .card-image{
     width:100%;
     display:flex;
 }
-
 .card-price{
     font-weight: bold;
     color:red;
@@ -34,7 +28,6 @@
     display:flex;
     align-items: center;
 }
-
 .sales{
     background-color:red;
     color:white;
@@ -43,12 +36,10 @@
     font-size:12px;
     
 }
-
 .old-price{
     font-weight: bold;
     font-size:18px;
 }
-
 .buy-item{
     border:none;
     border-radius: 15px;
@@ -61,17 +52,14 @@
     color:white;
     text-align:center
 }
-
 .card-bottom{
     display:flex;
     justify-content: space-between;
     align-items: center;
 }
-
 .cart-group{
     display:flex;
 }
-
 .btn-cart{
     border:none;
     background:none;
@@ -81,7 +69,6 @@
     cursor:pointer;
     margin-left: -10px;
 }
-
 .stock{
     background-color: rgb(198, 244, 129);
     border-radius: 5px;
@@ -89,37 +76,138 @@
     padding:2px;
     font-size:14px;
 }
-
-/* ---------- Trang danh sách / chi tiết / danh mục (pages/users) ---------- */
-main { min-height: 50vh; padding-bottom: 20px; }
-.page-title { margin: 25px 0 10px; }
-.toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin: 10px 0 20px; }
-.toolbar select { padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 12px; font-family: inherit; }
-#result-info { margin-left: auto; color: #64748b; }
-.empty { text-align: center; color: #64748b; padding: 30px 0; }
-
-.product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 15px; }
-.product-grid .card { display: flex; flex-direction: column; box-sizing: border-box; border: 1px solid #e2e8f0; }
-.product-grid .card-image { aspect-ratio: 1 / 1; object-fit: contain; }
-.product-grid .card-bottom { margin-top: auto; }
-.card-name a { color: inherit; text-decoration: none; }
-.card-name a:hover { color: #2563eb; }
-.stock.out { background-color: #e2e8f0; color: #64748b; }
-.btn-cart:disabled, button.buy-item:disabled { opacity: 0.5; cursor: not-allowed; }
-
-.breadcrumb { margin: 0; font-size: 14px; color: #64748b; }
-.breadcrumb a { color: #2563eb; text-decoration: none; }
-.detail { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin: 20px 0 30px; }
-.detail-img img { width: 100%; border: 1px solid #e2e8f0; border-radius: 20px; }
-.detail-info h1 { font-size: 24px; margin: 10px 0; }
-.detail-desc { line-height: 1.6; }
-.detail-actions { display: flex; align-items: center; gap: 12px; margin-top: 20px; }
-.detail-actions input { width: 70px; padding: 10px; border: 1px solid #cbd5e1; border-radius: 12px; }
-.detail-actions .buy-item { padding: 12px 28px; font-family: inherit; font-size: 15px; }
-
-.cat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 15px; }
-.cat-tile { padding: 20px; border: 1px solid #e2e8f0; border-radius: 20px; }
-.cat-main { display: flex; flex-direction: column; gap: 4px; color: #2563eb; text-decoration: none; font-size: 18px; }
-.cat-main span { color: #64748b; font-size: 14px; }
-.cat-tile ul { margin: 12px 0 0; padding-left: 18px; }
-.cat-tile li a { color: #334155; text-decoration: none; }
+/* ---------- Trang danh sách(pages/users) ---------- */
+main { 
+    min-height: 50vh; 
+    padding-bottom: 20px; 
+}
+.page-title { 
+    margin: 25px 0 10px; 
+}
+.toolbar { 
+    display: flex; 
+    flex-wrap: wrap; 
+    align-items: center; 
+    gap: 12px; 
+    margin: 10px 0 20px; 
+}
+.toolbar select { 
+    padding: 8px 12px; 
+    border: 1px solid #cbd5e1; 
+    border-radius: 12px; 
+    font-family: inherit; 
+}
+#result-info { 
+    margin-left: auto; 
+    color: #64748b; 
+}
+.empty { 
+    text-align: center; 
+    color: #64748b; 
+    padding: 30px 0; 
+}
+.product-grid { 
+    display: grid; 
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 15px; 
+}
+.product-grid .card { 
+    display: flex; 
+    flex-direction: column;
+     box-sizing: border-box;
+      border: 1px solid #e2e8f0; 
+}
+.product-grid .card-image { 
+    aspect-ratio: 1 / 1;
+    object-fit: contain; 
+}
+.product-grid .card-bottom { 
+    margin-top: auto; 
+}
+.card-name a { 
+    color: inherit; 
+    text-decoration: none; }
+.card-name a:hover { 
+    color: #2563eb; 
+}
+.stock.out { 
+    background-color: #e2e8f0; 
+    color: #64748b; 
+}
+.btn-cart:disabled, button.buy-item:disabled { 
+    opacity: 0.5; 
+    cursor: not-allowed; 
+}
+.breadcrumb { 
+    margin: 0;
+    font-size: 14px; 
+    color: #64748b; 
+}
+.breadcrumb a { 
+    color: #2563eb; 
+    text-decoration: none; 
+}
+.detail { 
+    display: grid; 
+    grid-template-columns: 1fr 1fr; 
+    gap: 30px; 
+    margin: 20px 0 30px; 
+}
+.detail-img img { 
+    width: 100%; 
+    border: 1px solid #e2e8f0; 
+    border-radius: 20px; 
+}
+.detail-info h1 { 
+    font-size: 24px; 
+    margin: 10px 0; 
+}
+.detail-desc { 
+    line-height: 1.6; 
+}
+.detail-actions { 
+    display: flex; 
+    align-items: center; 
+    gap: 12px; 
+    margin-top: 20px; 
+}
+.detail-actions input { 
+    width: 70px; 
+    padding: 10px; 
+    border: 1px solid #cbd5e1; 
+    border-radius: 12px; }
+.detail-actions .buy-item { 
+    padding: 12px 28px; 
+    font-family: inherit; 
+    font-size: 15px; 
+}
+.cat-grid { 
+    display: grid; 
+    grid-template-columns:
+    repeat(auto-fill, 
+    minmax(260px, 1fr)); 
+    gap: 15px; 
+}
+.cat-tile { 
+    padding: 20px; 
+    border: 1px solid #e2e8f0; 
+    border-radius: 20px; 
+}
+.cat-main { 
+    display: flex; 
+    flex-direction: column; 
+    gap: 4px; color: #2563eb; 
+    text-decoration: none; 
+    font-size: 18px; 
+}
+.cat-main span { 
+    color: #64748b; 
+    font-size: 14px; 
+}
+.cat-tile ul { 
+    margin: 12px 0 0; 
+    padding-left: 18px; 
+}
+.cat-tile li a { 
+    color: #334155; text-decoration: none; 
+}
