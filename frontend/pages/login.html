@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Đăng nhập — SHOP DEMO</title>
+    <link rel="stylesheet" href="../assets/css/style.css" />
+    <link rel="stylesheet" href="../assets/css/header.css" />
+    <link rel="stylesheet" href="../assets/css/auth.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
+    />
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <div class="topbar">
+          <a class="brand" href="../index.html">
+            <img src="../assets/images/logo1.avif" alt="Logo" />
+            <h2 class="namelogo">SHOP DEMO</h2>
+          </a>
+          <nav class="Menu">
+            <a href="../index.html">Trang chủ</a>
+            <div id="auth-area" class="auth-area"></div>
+          </nav>
+        </div>
+      </header>
+    </div>
+
+    <main class="auth-page">
+      <form id="login-form" class="auth-card" novalidate>
+        <h1>Đăng nhập</h1>
+        <p class="auth-lead">Dùng email và mật khẩu đã đăng ký.</p>
+        <div id="auth-status" class="auth-status" hidden></div>
+        <label class="auth-field"
+          >Email
+          <input
+            id="email"
+            name="email"
+            type="email"
+            autocomplete="email"
+            required
+          />
+          <small class="field-error" data-error-for="email"></small>
+        </label>
+        <label class="auth-field"
+          >Mật khẩu
+          <input
+            id="password"
+            name="password"
+            type="password"
+            autocomplete="current-password"
+            required
+          />
+          <small class="field-error" data-error-for="password"></small>
+        </label>
+        <button id="btn-submit" class="btn-auth" type="submit">Đăng nhập</button>
+        <p class="auth-alt">
+          Chưa có tài khoản? <a href="register.html">Đăng ký</a>
+        </p>
+      </form>
+    </main>
+
+    <script src="../assets/js/auth.js" charset="utf-8"></script>
+    <script src="../assets/js/main.js" charset="utf-8"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", async () => {
+        const form = document.getElementById("login-form");
+        const statusEl = document.getElementById("auth-status");
+        const btn = document.getElementById("btn-submit");
+        const params = new URLSearchParams(location.search);
+        const user = await Auth.currentUser();
+        if (user) {
+          location.replace(Auth.safeRedirect(params.get("redirect")) || Auth.homeHref);
+          return;
+        }
+
+        form.addEventListener("submit", async (ev) => {
+          ev.preventDefault();
+          form.querySelectorAll(".is-invalid").forEach((n) => n.classList.remove("is-invalid"));
+          form.querySelectorAll(".field-error").forEach((n) => {
+            n.textContent = "";
+          });
+          Auth.setStatus(statusEl, "");
+
+          const email = String(form.email.value).trim();
+          const password = String(form.password.value);
+          let invalid = false;
+          if (!Auth.emailRe.test(email)) {
+            form.email.closest(".auth-field").classList.add("is-invalid");
+            form.querySelector('[data-error-for="email"]').textContent =
+              "Email không hợp lệ.";
+            invalid = true;
+          }
+          if (!password) {
+            form.password.closest(".auth-field").classList.add("is-invalid");
+            form.querySelector('[data-error-for="password"]').textContent =
+              "Vui lòng nhập mật khẩu.";
+            invalid = true;
+          }
+          if (invalid) return;
+
+          btn.disabled = true;
+          btn.textContent = "Đang đăng nhập…";
+          try {
+            await Auth.login({ email, password });
+            location.href = Auth.safeRedirect(params.get("redirect")) || Auth.homeHref;
+          } catch (e) {
+            Auth.setStatus(statusEl, e.message, "error");
+            btn.disabled = false;
+            btn.textContent = "Đăng nhập";
+          }
+        });
+      });
+    </script>
+  </body>
+</html>
