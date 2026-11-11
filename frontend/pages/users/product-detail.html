@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8">
+    <title>Chi tiết sản phẩm - SHOP DEMO</title>
+    <link rel="stylesheet" type="text/css" href="../../assets/css/style.css" />
+    <link rel="stylesheet" type="text/css" href="../../assets/css/header.css" />
+    <link rel="stylesheet" type="text/css" href="../../assets/css/home.css" />
+    <link rel="stylesheet" type="text/css" href="../../assets/css/products.css" />
+    <link rel="stylesheet" type="text/css" href="../../assets/css/cart.css" />
+    <link rel="stylesheet" type="text/css" href="../../assets/css/responsive.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  </head>
+  <body data-page="detail">
+    <div class="container">
+    <header>
+      <div class="topbar">
+        <div class="brand">
+          <img src="../../assets/images/logo1.avif" alt="Logo" />
+          <h2 class="namelogo">SHOP DEMO</h2>
+        </div>
+        <div class="search">
+          <input id="search-input" type="text" placeholder="Tìm kiếm" />
+        </div>
+
+        <nav class="Menu">
+          <div class="dropdown">
+            <a href="categories.html"><i class="bi bi-list"></i>Danh mục sản phẩm</a>
+            <ul class="sub-menu">
+              <li><a href="products.html?cat=pc-gaming">PC Gaming</a></li>
+              <li><a href="products.html?cat=pc-van-phong">PC Văn phòng</a></li>
+              <li>
+                <a href="products.html?cat=laptop">Laptop</a>
+                <ul class="sub-menu">
+                  <li><a href="products.html?cat=laptop-gaming">Laptop Gaming</a></li>
+                  <li><a href="products.html?cat=laptop-van-phong">Laptop Văn phòng</a></li>
+                </ul>
+              </li>
+              <li>
+                <a href="products.html?cat=linh-kien">Linh kiện máy tính</a>
+                <ul class="sub-menu">
+                  <li><a href="products.html?cat=cpu">CPU</a></li>
+                  <li><a href="products.html?cat=ram">RAM</a></li>
+                  <li><a href="products.html?cat=mainboard">Mainboard</a></li>
+                  <li><a href="products.html?cat=vga">VGA</a></li>
+                </ul>
+              </li>
+            </ul>
+          </div>
+          <a href="#"><i class="bi bi-headset"></i>Tư vấn</a>
+          <div>
+          <a href="#">Đăng nhập</a> |
+          <a href="#">Đăng ký</a>
+          </div>
+        </nav>
+      </div>
+    </header>
+    <section class="hotline-bar">
+      <a href="tel:0123456789" class="info-item">
+        <span class="icon-circle"><i class="bi bi-telephone"></i></span>
+        <div>
+          <strong>Hotline mua hàng</strong><br>
+          012.345.6789
+        </div>
+      </a>
+      <a href="#" class="info-item">
+        <span class="icon-circle"><i class="bi bi-pc-display"></i></span>
+        <div>Xây dựng<br>Cấu hình PC</div>
+      </a>
+      <a href="#" class="info-item" data-cart-toggle>
+        <span class="icon-circle"><i class="bi bi-cart"></i></span>
+        <div>Giỏ hàng</div>
+      </a>      
+    </section>
+    <main>
+      <div id="product-detail" class="detail"></div>
+      <section id="related"></section>
+    </main>
+    </div>
+    <footer class="footer">
+      <div class="container footer-inner">
+      <div class="footer-column">
+        <h4>Về DEMO SHOP</h4>
+        <p>
+          DEMO SHOP là đơn vị chuyên cung cấp PC GAMING ,<br />
+          PC ĐỒ HỌA , PC Đẹp và các sản phẩm linh kiện <br />
+          máy tính giá tốt.
+        </p>
+      </div>
+      <div class="footer-column">
+        <h4>Thông tin-địa chỉ liên hệ</h4>
+        <p>
+          TP.Hồ Chí Minh<br/>
+          0123456789
+        </p>
+      </div>
+      <div class="footer-column">
+        <h4>Chính sách</h4>
+        <p>
+          Chính Sách Bảo Mật<br />
+          Quy Định Bảo Hành<br />
+          Chính Sách Đổi Trả<br />
+          Điều khoản sử dụng<br />
+          Chính sách vận chuyển & kiểm hàng
+        </p>
+      </div>
+      </div>
+    </footer>
+    <script src="../../assets/js/products.js"></script>
+  </body>
+</html>
