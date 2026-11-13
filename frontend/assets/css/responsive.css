@@ -1,6 +1,3 @@
-/* responsive.css - Media queries (tablet <=992px, mobile <=600px)
-   LƯU Ý: phải được link SAU CÙNG để ghi đè các file CSS khác */
-
 @media (max-width: 992px) {
     .topbar {
         flex-wrap: wrap;        
@@ -24,7 +21,6 @@ flex: 1 1 calc(50% - 15px);
         grid-template-columns: repeat(2, 1fr);
 }
 }
-
 @media (max-width: 600px) {
     header {
         padding: 15px;
@@ -61,7 +57,6 @@ flex: 1 1 calc(50% - 15px);
     grid-template-columns: 1fr;
 }
 }
-
 /* ---------- Trang sản phẩm / giỏ hàng ---------- */
 @media (max-width: 992px) {
     .detail { grid-template-columns: 1fr; }
