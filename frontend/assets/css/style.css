@@ -1,49 +1,41 @@
 /* style.css - Style chung toàn site: reset, body, container, footer */
-
 html {
     scroll-behavior: smooth;
     font-family: Arial;
 }
-
 h2{
     color:rgb(164, 194, 160);
     gap:2px;
 }
-
 body{
     margin:0 auto;
     max-width: 1500px;
     padding:0 60px;
     box-sizing: border-box;
 }
-
 .container{
     max-width: 1500px;
     margin:0 auto;
     padding:0 20px;;
     box-sizing: border-box;
 }
-
 .footer {
     background-color: aqua;
     padding:20px 0;
     margin:10px 15px;
     
 }
-
 .footer-inner{
     display:grid;
     grid-template-columns: repeat(3, 1fr);
     gap:10px;
 }
-
 .footer-column {
     display:flex;
     flex-direction:column;
     gap:0px;
 
 }
-
 img {
     max-width: 100%;
 }
