@@ -266,7 +266,7 @@
       <span>BTA <span class="store-label">STORE</span></span>
     </a>
     <p style="margin-top:14px">Công nghệ cho cuộc sống mỗi ngày.</p>
-    <small>Website demo học tập · Thanh toán COD</small>
+    <small>Thanh toán khi nhận hàng (COD) · Giao hàng toàn quốc</small>
   </div>
   <div>
     <h3>Khám phá</h3>
@@ -280,7 +280,7 @@
   </div>
 </div>
 <div class="shell footer-bottom">
-  <span>© ${new Date().getFullYear()} BTA STORE · Bản demo, chưa tiếp nhận thanh toán thực tế.</span>
+  <span>© ${new Date().getFullYear()} BTA Store · Thanh toán khi nhận hàng toàn quốc.</span>
 </div>`;
   }
 

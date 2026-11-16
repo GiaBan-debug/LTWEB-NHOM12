@@ -149,7 +149,7 @@
     <button class="button" data-add="${p.id}" ${inStock ? "" : "disabled"}>Thêm vào giỏ hàng</button>
     <a class="button secondary" href="${S.page("cart")}">Xem giỏ hàng</a>
   </div>
-  <p class="detail-note">Thanh toán COD · Phí giao hàng demo: 0 ₫ · Bảo hành chính hãng</p>
+  <p class="detail-note">Thanh toán khi nhận hàng (COD) · Giao hàng toàn quốc · Bảo hành chính hãng</p>
 </div>`;
       try {
         const { data } = await S.api(
