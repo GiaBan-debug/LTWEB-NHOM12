@@ -6,7 +6,7 @@
   const API_BASE = "../../backend/api/";
   const UPLOAD_BASE = "../../uploads/"; // nơi lưu ảnh sản phẩm
   const LOGIN_URL = "login.html";
-  const ORDERS_URL = "orders.html";
+  const ORDERS_URL = "users/order-history.html";
   const MAX_QTY = 99;
   const PHONE_RE = /^(0|\+84)\d{9}$/;
 
@@ -51,6 +51,7 @@
     );
 
   const imageUrl = (path) => {
+    if (window.Shop) return Shop.image(path);
     if (!path) return PLACEHOLDER_IMG;
     if (/^(https?:)?\/\//.test(path) || path.startsWith("data:")) return path;
     return UPLOAD_BASE + String(path).replace(/^\/+/, "");
@@ -79,6 +80,7 @@
   };
 
   async function api(method, query = "", body) {
+    if (window.Shop) return Shop.api("cart.php" + query, {method, body});
     const res = await fetch(API_BASE + "cart.php" + query, {
       method,
       credentials: "same-origin",
@@ -151,6 +153,7 @@
 
     const count = data.total_items;
     els.navCount.textContent = count;
+    document.querySelectorAll('[data-cart-count]').forEach(el => { el.textContent = count; });
     els.navCount.hidden = count === 0;
 
     if (data.is_empty) {
@@ -173,6 +176,7 @@
     try {
       render((await api("GET")).data);
     } catch (e) {
+      if (e.status === 401) { Shop.login(); return; }
       els.loading.hidden = true;
       showAlert(e.message);
     }
@@ -270,6 +274,7 @@
     return errors;
   }
 
+  let checkoutKey = crypto.randomUUID ? crypto.randomUUID() : Array.from(crypto.getRandomValues(new Uint8Array(16)), x => x.toString(16).padStart(2, "0")).join("");
   els.form.addEventListener("submit", async (ev) => {
     ev.preventDefault();
     if (busy || !cart || !cart.can_checkout) return;
@@ -282,6 +287,7 @@
       phone: String(fd.get("phone")).trim(),
       address: String(fd.get("address")).trim(),
       note: String(fd.get("note")).trim(),
+      checkout_key: checkoutKey,
     };
     const errors = validateForm(values);
     if (Object.keys(errors).length) {
@@ -294,15 +300,7 @@
     els.btnOrder.disabled = true;
     els.btnOrder.textContent = "Đang đặt hàng…";
     try {
-      const res = await fetch(API_BASE + "orders.php", {
-        method: "POST",
-        credentials: "same-origin",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: JSON.stringify(values),
-      }).then(handleResponse);
+      const res = await Shop.api("orders.php", {method: "POST", body: values});
       location.href = `${ORDERS_URL}?id=${res.data.order_id}&placed=1`;
     } catch (e) {
       const p = e.payload || {};

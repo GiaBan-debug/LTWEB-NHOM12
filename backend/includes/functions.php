@@ -4,6 +4,23 @@
 
 declare(strict_types=1);
 
+/** CORS cho frontend local, cho phép cookie session (không dùng *). */
+function applyApiCors(array $methods = ['GET', 'POST', 'OPTIONS']): void
+{
+    $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
+    if ($origin !== '' && preg_match('#^https?://(localhost|127\.0\.0\.1)(:\d+)?$#i', $origin) === 1) {
+        header('Access-Control-Allow-Origin: ' . $origin);
+        header('Access-Control-Allow-Credentials: true');
+        header('Access-Control-Allow-Headers: Content-Type, X-CSRF-Token');
+        header('Access-Control-Allow-Methods: ' . implode(', ', $methods));
+        header('Vary: Origin');
+    }
+    if (($_SERVER['REQUEST_METHOD'] ?? '') === 'OPTIONS') {
+        http_response_code(204);
+        exit;
+    }
+}
+
 /** Trả JSON chuẩn theo đặc tả nhóm */
 function jsonResponse(bool $success, mixed $data = null, string $message = '', int $code = 200): void
 {
@@ -50,5 +67,27 @@ function clean(string $value): string
 function getJsonBody(): array
 {
     $raw = file_get_contents('php://input');
-    return json_decode($raw ?: '{}', true) ?? [];
+    $value = json_decode($raw ?: '{}');
+    if (json_last_error() !== JSON_ERROR_NONE || !is_object($value)) {
+        jsonResponse(false, null, 'Body phải là JSON object hợp lệ.', 422);
+    }
+    return (array) $value;
+}
+
+function inputString(array $input, string $key, int $max = 255, bool $required = false): string
+{
+    $value = $input[$key] ?? '';
+    if (!is_string($value)) jsonResponse(false, null, "$key phải là chuỗi.", 422);
+    $value = trim($value);
+    if (($required && $value === '') || mb_strlen($value) > $max) {
+        jsonResponse(false, null, "$key không hợp lệ (tối đa $max ký tự).", 422);
+    }
+    return $value;
+}
+
+function positiveInt(mixed $value): ?int
+{
+    if (!is_int($value) && !is_string($value)) return null;
+    $id = filter_var($value, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1, 'max_range' => 2147483647]]);
+    return $id === false ? null : $id;
 }

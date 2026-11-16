@@ -4,14 +4,9 @@
 
 declare(strict_types=1);
 
-header('Content-Type: application/json; charset=utf-8');
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: POST, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type');
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') exit;
+require_once __DIR__ . '/../includes/bootstrap.php';
 
-require_once __DIR__ . '/../config/database.php';
-require_once __DIR__ . '/../includes/functions.php';
+applyApiCors(['POST', 'OPTIONS']);
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
@@ -21,9 +16,10 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 $body = getJsonBody();
 
-$name     = trim($body['name']     ?? '');
-$email    = trim($body['email']    ?? '');
-$password = trim($body['password'] ?? '');
+$name     = inputString($body, 'name', 100, true);
+$email    = inputString($body, 'email', 150, true);
+$password = $body['password'] ?? '';
+if (!is_string($password) || strlen($password) > 72) jsonResponse(false, null, 'Mật khẩu không hợp lệ.', 422);
 
 // --- Validate ---
 $errors = [];
@@ -50,7 +46,12 @@ $hash = password_hash($password, PASSWORD_BCRYPT);
 $stmt = $db->prepare(
     "INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, 'user')"
 );
-$stmt->execute([$name, $email, $hash]);
+try {
+    $stmt->execute([$name, $email, $hash]);
+} catch (PDOException $error) {
+    if ($error->getCode() === '23000') jsonResponse(false, null, 'Email đã được sử dụng.', 409);
+    throw $error;
+}
 $newId = (int)$db->lastInsertId();
 
 jsonResponse(true, ['id' => $newId], 'Đăng ký thành công', 201);

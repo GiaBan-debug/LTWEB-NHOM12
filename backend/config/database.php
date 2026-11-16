@@ -11,7 +11,7 @@ if (file_exists($envPath)) {
         if ($line === '' || str_starts_with($line, '#')) continue;
         if (str_contains($line, '=')) {
             [$k, $v] = explode('=', $line, 2);
-            $_ENV[trim($k)] = trim($v);
+            $_ENV[trim($k)] = trim(trim($v), "\"'");
         }
     }
 }
@@ -21,11 +21,11 @@ function getDB(): PDO
     static $pdo = null;
     if ($pdo !== null) return $pdo;
 
-    $host = $_ENV['DB_HOST'] ?? '127.0.0.1';
-    $port = $_ENV['DB_PORT'] ?? '3306';
-    $name = $_ENV['DB_NAME'] ?? 'ltweb_nhom12';
-    $user = $_ENV['DB_USER'] ?? 'root';
-    $pass = $_ENV['DB_PASSWORD'] ?? '';
+    $host = getenv('DB_HOST') ?: ($_ENV['DB_HOST'] ?? '127.0.0.1');
+    $port = getenv('DB_PORT') ?: ($_ENV['DB_PORT'] ?? '3306');
+    $name = getenv('DB_NAME') ?: ($_ENV['DB_NAME'] ?? 'ltweb_nhom12');
+    $user = getenv('DB_USER') ?: ($_ENV['DB_USER'] ?? 'root');
+    $pass = getenv('DB_PASSWORD') !== false ? getenv('DB_PASSWORD') : ($_ENV['DB_PASSWORD'] ?? '');
 
     try {
         $dsn = "mysql:host={$host};port={$port};dbname={$name};charset=utf8mb4";
@@ -35,6 +35,7 @@ function getDB(): PDO
             PDO::ATTR_EMULATE_PREPARES   => false,
         ]);
     } catch (PDOException $e) {
+        error_log('Database connection: ' . $e->getMessage());
         // Không lộ chi tiết lỗi ra ngoài
         http_response_code(500);
         header('Content-Type: application/json; charset=utf-8');

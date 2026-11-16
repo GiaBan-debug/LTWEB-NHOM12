@@ -1,211 +1,154 @@
-<!doctype html>
-<html>
-  <head>
-    <title>SHOP DEMO</title>
-    <link rel="stylesheet" type="text/css" href="assets/css/style.css" />
-    <link rel="stylesheet" type="text/css" href="assets/css/header.css" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-  </head>
-  <body>
-    <div class="container">
-    <header>
-      <div class="topbar">
-        <div class="brand">
-          <img src="assets/images/logo1.avif" alt="Logo" />
-          <h2 class="namelogo">SHOP DEMO</h2>
-        </div>
-        <div class="search">
-          <input id="search-input" type="text" placeholder="Tìm kiếm" />
-        </div>
+﻿<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="description" content="BTA STORE — cửa hàng điện thoại, laptop và phụ kiện công nghệ." />
+  <title>Công nghệ cho mỗi ngày · BTA STORE</title>
+  <link rel="stylesheet" href="assets/css/store.css" />
+  <script src="assets/js/shop.js" defer></script>
+  <script src="assets/js/auth.js" defer></script>
+  <script src="assets/js/main.js" defer></script>
+  <script src="assets/js/store.js" defer></script>
+</head>
+<body data-view="home">
 
-        <nav class="Menu">
-          <div class="dropdown">
-            <a href="#"><i class="bi bi-list"></i>Danh mục sản phẩm</a>
-            <ul class="sub-menu">
-              <li><a href="#">PC Gaming</a></li>
-              <li><a href="#">PC Văn phòng</a></li>
-              <li>
-                <a href="#">Laptop</a>
-                <ul class="sub-menu">
-                  <li><a href="#">Laptop Gaming</a></li>
-                  <li><a href="#">Laptop Văn phòng</a></li>
-                </ul>
-              </li>
-              <li>
-                <a href="#">Linh kiện máy tính</a>
-                <ul class="sub-menu">
-                  <li><a href="#">CPU</a></li>
-                  <li><a href="#">RAM</a></li>
-                  <li><a href="#">Mainboard</a></li>
-                  <li><a href="#">VGA</a></li>
-                </ul>
-              </li>
-            </ul>
-          </div>
-          <a href="#"><i class="bi bi-headset"></i>Tư vấn</a>
-          <div>
-          <a href="#">Đăng nhập</a> |
-          <a href="#">Đăng ký</a>
-          </div>
-        </nav>
+<!-- Promo Bar -->
+<div class="announcement">
+  <span style="display:inline-flex;align-items:center;gap:8px">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h11v10H3z"/><path d="M14 10h4l3 3v3h-7z"/><circle cx="7" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg>
+    Miễn phí giao hàng toàn quốc cho đơn từ 2 triệu
+  </span>
+</div>
+
+<!-- Header -->
+<header class="site-header" data-site-header></header>
+
+<main>
+  <div class="shell" style="padding-top:32px;padding-bottom:72px">
+
+    <!-- ===== HERO ===== -->
+    <section class="hero">
+      <div class="hero-copy">
+        <div class="hero-badge">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5L12 3Z"/></svg>
+          Công nghệ cho cuộc sống tốt hơn
+        </div>
+        <h1>Chạm tương lai.<br><span>Theo cách của bạn.</span></h1>
+        <p class="lead">Khám phá những thiết bị công nghệ được tuyển chọn kỹ lưỡng, chính hãng và phù hợp với bạn.</p>
+        <div class="hero-actions">
+          <a class="button" href="pages/users/products.html">Khám phá ngay
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+          </a>
+          <a class="button secondary" href="pages/users/categories.html">Xem danh mục</a>
+        </div>
+        <div class="hero-checks">
+          <span class="hero-check">
+            <span class="check-dot"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg></span>
+            Chính hãng 100%
+          </span>
+          <span class="hero-check">
+            <span class="check-dot"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg></span>
+            Đổi mới 30 ngày
+          </span>
+          <span class="hero-check">
+            <span class="check-dot"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg></span>
+            Thanh toán COD
+          </span>
+        </div>
       </div>
-    </header>
-    <section class="hotline-bar">
-      <a href="tel:0123456789" class="info-item">
-        <span class="icon-circle"><i class="bi bi-telephone"></i></span>
+      <div class="hero-image-col" role="img" aria-label="MacBook Air M3 — laptop gọn nhẹ"></div>
+      <div class="hero-glow"></div>
+    </section>
+
+    <!-- ===== BENEFITS ===== -->
+    <div class="benefits">
+      <div class="benefit">
+        <svg class="benefit-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h11v10H3z"/><path d="M14 10h4l3 3v3h-7z"/><circle cx="7" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg>
         <div>
-          <strong>Hotline mua hàng</strong><br>
-          012.345.6789
-        </div>
-      </a>
-      <a href="#" class="info-item">
-        <span class="icon-circle"><i class="bi bi-pc-display"></i></span>
-        <div>Xây dựng<br>Cấu hình PC</div>
-      </a>
-      <a href="#" class="info-item">
-        <span class="icon-circle"><i class="bi bi-cart"></i></span>
-        <div>Giỏ hàng</div>
-      </a>      
-    </section>
-    <section>
-      <div class="cover">
-        <img src="assets/images/shopimage.png" alt="Anh cover" />
-        <div class="title">
-          <h2>CƠ SỞ THÀNH PHỐ HỒ CHÍ MINH</h2>
+          <b>Giao hàng miễn phí</b>
+          <small>Toàn quốc từ 2 triệu</small>
         </div>
       </div>
-    </section>
-    <section class="deal">
-      <div class="deal-title">
-        <h2>DEAL HOT MỖI NGÀY-KHUYỄN MÃI LIỀN TAY</h2>
-      </div>
-      <div class="deal-list">
-        <div class="card">
-          <img class="card-image" src="assets/images/pc1.jpeg" alt="Ảnh máy tính 1">
-          <h3 class="card-name">PC TTG GAMING i5 12400F - 16GB DDR4 - RTX 5060 8GB (All NEW - Bảo hành 36 tháng)</h3>
-        
-        <div class="card-price">
-          <span class="new-price">25.280.000 VND</span>
-          <span class="sales">-9%</span>
-        </div>
-        <del class="old-price">27.990.000 VND</del>
-        <div class="card-bottom">
-          <div class="cart-group">
-          <img class="shop-icon" src="assets/images/shopicon.png" alt="Icon shop">
-          <button class="btn-cart">THÊM VÀO GIỎ</button>
-          </div>
-          <span class="stock">Còn hàng</span>
-        </div>
-        <div class="buy-item">MUA NGAY
-        </div>
-        </div>
-        <div class="card">
-          <img class="card-image" src="assets/images/pc2.jpg" alt="Ảnh máy tính 2">
-          <h3 class="card-name">PC TTG GAMING CORE ULTRA 5 250K PLUS - RTX 5060 Ti 8GB</h3>
-        <div class="card-price">
-          <span class="new-price">37.980.000 VND</span>
-          <span class="sales">-5%</span>
-        </div>
-        <del class="old-price">39.990.000 VND</del>
-        <div class="card-bottom">
-          <div class="cart-group">
-          <img class="shop-icon" src="assets/images/shopicon.png" alt="Icon shop">
-          <button class="btn-cart">THÊM VÀO GIỎ</button>
-          </div>
-          <span class="stock">Còn hàng</span>
-        </div>
-        <div class="buy-item">MUA NGAY
-        </div>
-        </div>
-        <div class="card">
-          <img class="card-image" src="assets/images/pc3.png" alt="Ảnh máy tính 3">
-          <h3 class="card-name">PC TTG AMD GAMING Ryzen 7 5700X - RTX 3050 8GB (All NEW - Bảo hành 36 tháng)</h3>
-        <div class="card-price">
-          <span class="new-price">18.280.000 VND</span>
-          <span class="sales">-9%</span>
-        </div>
-        <del class="old-price">19.990.000 VND</del>
-        <div class="card-bottom">
-          <div class="cart-group">
-          <img class="shop-icon" src="assets/images/shopicon.png" alt="Icon shop">
-          <button class="btn-cart">THÊM VÀO GIỎ</button>
-          </div>
-          <span class="stock">Còn hàng</span>
-        </div>
-        <div class="buy-item">MUA NGAY
-        </div>
-        </div>
-        <div class="card">
-          <img class="card-image" src="assets/images/pc4.png" alt="Ảnh máy tính 4">
-          <h3 class="card-name">PC TTG GAMING CORE ULTRA 5 250K PLUS - RTX 5070 12GB OC</h3>
-        <div class="card-price">
-          <span class="new-price">48.980.000 VND</span>
-          <span class="sales">-9%</span>
-        </div>
-        <del class="old-price">53.990.000 VND</del>
-        <div class="card-bottom">
-          <div class="cart-group">
-          <img class="shop-icon" src="assets/images/shopicon.png" alt="Icon shop">
-          <button class="btn-cart">THÊM VÀO GIỎ</button>
-          </div>
-          <span class="stock">Còn hàng</span>
-        </div>
-        <div class="buy-item">MUA NGAY
-        </div>
-        </div>
-        <div class="card">
-          <img class="card-image" src="assets/images/pc5.png" alt="Ảnh máy tính 5">
-          <h3 class="card-name">PC TTG AMD Ryzen 5 5500 - RTX 5050 8GB OC (Cấu hình gốc)</h3>
-        <div class="card-price">
-          <span class="new-price">19.680.000 VND</span>
-          <span class="sales">-9%</span>
-        </div>
-        <del class="old-price">24.990.000 VND</del>
-        <div class="card-bottom">
-          <div class="cart-group">
-          <img class="shop-icon" src="assets/images/shopicon.png" alt="Icon shop">
-          <button class="btn-cart">THÊM VÀO GIỎ</button>
-          </div>
-          <span class="stock">Còn hàng</span>
-        </div>
-        <div class="buy-item">MUA NGAY
-        </div>
+      <div class="benefit">
+        <svg class="benefit-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 5 6v5c0 5 3 8 7 10 4-2 7-5 7-10V6l-7-3Z"/><path d="m9 12 2 2 4-4"/></svg>
+        <div>
+          <b>Bảo hành chính hãng</b>
+          <small>An tâm sử dụng dài lâu</small>
         </div>
       </div>
-      <div class="deal-bottom">
-          <a href="#">Xem tất cả >></a>
+      <div class="benefit">
+        <svg class="benefit-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+        <div>
+          <b>Đổi mới trong 30 ngày</b>
+          <small>Nhanh chóng, minh bạch</small>
         </div>
-    </section>
+      </div>
+      <div class="benefit">
+        <svg class="benefit-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 14v-2a8 8 0 0 1 16 0v2"/><path d="M6 13H4v6h3v-6H6Zm12 0h2v6h-3v-6h1Z"/></svg>
+        <div>
+          <b>Hỗ trợ tận tâm</b>
+          <small>Tư vấn 8:00 – 22:00</small>
+        </div>
+      </div>
     </div>
-    <footer class="footer">
-      <div class="container footer-inner">
-      <div class="footer-column">
-        <h4>Về DEMO SHOP</h4>
-        <p>
-          DEMO SHOP là đơn vị chuyên cung cấp PC GAMING ,<br />
-          PC ĐỒ HỌA , PC Đẹp và các sản phẩm linh kiện <br />
-          máy tính giá tốt.
-        </p>
+
+    <!-- ===== DANH MỤC ===== -->
+    <section>
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow">DANH MỤC NỔI BẬT</span>
+          <h2>Bạn đang tìm gì?</h2>
+        </div>
+        <a class="section-link" href="pages/users/categories.html">
+          Xem tất cả
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+        </a>
       </div>
-      <div class="footer-column">
-        <h4>Thông tin-địa chỉ liên hệ</h4>
-        <p>
-          TP.Hồ Chí Minh<br/>
-          0123456789
-        </p>
+      <div id="home-categories" class="category-grid">
+        <p class="subtle">Đang tải danh mục…</p>
       </div>
-      <div class="footer-column">
-        <h4>Chính sách</h4>
-        <p>
-          Chính Sách Bảo Mật<br />
-          Quy Định Bảo Hành<br />
-          Chính Sách Đổi Trả<br />
-          Điều khoản sử dụng<br />
-          Chính sách vận chuyển & kiểm hàng
-        </p>
+    </section>
+
+    <!-- ===== SẢN PHẨM NỔI BẬT ===== -->
+    <section style="margin-top:56px">
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow">ĐƯỢC YÊU THÍCH NHẤT</span>
+          <h2>Sản phẩm nổi bật</h2>
+        </div>
+        <a class="section-link" href="pages/users/products.html">
+          Xem tất cả
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+        </a>
       </div>
+      <div id="home-products" class="product-grid">
+        <p class="subtle">Đang tải sản phẩm…</p>
       </div>
-    </footer>
-  </body>
+    </section>
+
+    <!-- ===== DEAL BANNER ===== -->
+    <div class="deal-banner">
+      <div style="position:relative;z-index:1;max-width:520px">
+        <span style="display:inline-block;border-radius:999px;background:#f5f5f7;padding:7px 14px;font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#155eef;margin-bottom:20px">
+          ƯU ĐÃI ĐỘC QUYỀN BTA STORE
+        </span>
+        <h2>Nâng cấp dễ dàng.<br>Thanh toán nhẹ nhàng.</h2>
+        <p class="lead" style="font-size:15px;margin-top:12px">Thu cũ đổi mới, trợ giá lên đến 3 triệu. Thanh toán COD — nhận hàng mới thanh toán.</p>
+        <a class="button" href="pages/users/products.html" style="margin-top:24px;display:inline-flex">
+          Khám phá ngay
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+        </a>
+      </div>
+      <div class="deal-orb deal-orb-1"></div>
+      <div class="deal-orb deal-orb-2"></div>
+    </div>
+
+  </div><!-- /shell -->
+</main>
+
+<!-- Footer -->
+<footer class="site-footer" data-site-footer></footer>
+
+</body>
 </html>
