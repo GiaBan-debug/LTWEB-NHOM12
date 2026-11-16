@@ -1,4 +1,4 @@
-USE ltweb_nhom12;
+-- Chọn database trước khi import; chỉ dùng cho DB demo mới.
 
 -- ----------------------------
 -- Danh mục
@@ -15,9 +15,9 @@ INSERT INTO categories (name, slug, description) VALUES
 -- Hash tạo bằng: password_hash('123456', PASSWORD_BCRYPT)
 -- ----------------------------
 INSERT INTO users (name, email, password, role) VALUES
-('Admin',        'admin@ltweb.com',  '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin'),
-('Nguyễn Văn A', 'user1@ltweb.com',  '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'user'),
-('Trần Thị B',   'user2@ltweb.com',  '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'user');
+('Admin',        'admin@ltweb.com',  '$2y$12$yXbNYDlLOK4Dw.GdJVT3ae5Er3UiacD9UYgw6X74XJ9/V7eYFU1iC', 'admin'),
+('Nguyễn Văn A', 'user1@ltweb.com',  '$2y$12$yXbNYDlLOK4Dw.GdJVT3ae5Er3UiacD9UYgw6X74XJ9/V7eYFU1iC', 'user'),
+('Trần Thị B',   'user2@ltweb.com',  '$2y$12$yXbNYDlLOK4Dw.GdJVT3ae5Er3UiacD9UYgw6X74XJ9/V7eYFU1iC', 'user');
 
 -- ----------------------------
 -- Sản phẩm mẫu
@@ -31,3 +31,14 @@ INSERT INTO products (category_id, name, slug, description, price, stock, status
 (3, 'AirPods Pro Gen 2',        'airpods-pro-gen-2',        'Chống ồn ANC, âm thanh Lossless',          6290000,100, 'active'),
 (3, 'Cáp USB-C 100W 2m',        'cap-usb-c-100w-2m',        'Sạc nhanh 100W, truyền dữ liệu 10Gbps',     199000,200, 'active'),
 (4, 'iPad Pro M4 11"',          'ipad-pro-m4-11',           'Màn OLED nano-texture, chip M4',          23990000, 25, 'active');
+
+UPDATE products SET thumbnail = CONCAT('products/', CASE slug
+  WHEN 'iphone-15-pro-max-256gb' THEN 'iphone-15-pro-max.jpg'
+  WHEN 'samsung-galaxy-s24-ultra' THEN 'samsung-s24-ultra.jpg'
+  WHEN 'xiaomi-14-ultra' THEN 'xiaomi-14-ultra.jpg'
+  WHEN 'macbook-air-m3-13' THEN 'macbook-air-m3.jpg'
+  WHEN 'dell-xps-15-9530' THEN 'dell-xps-15.jpg'
+  WHEN 'airpods-pro-gen-2' THEN 'airpods-pro-2.jpg'
+  WHEN 'cap-usb-c-100w-2m' THEN 'cap-usb-c.jpg'
+  WHEN 'ipad-pro-m4-11' THEN 'ipad-pro-m4.jpg'
+END);

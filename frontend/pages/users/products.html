@@ -1,0 +1,85 @@
+﻿<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="description" content="BTA STORE — tìm điện thoại, laptop và phụ kiện công nghệ." />
+  <title>Sản phẩm · BTA STORE</title>
+  <link rel="stylesheet" href="../../assets/css/store.css" />
+  <script src="../../assets/js/shop.js" defer></script>
+  <script src="../../assets/js/auth.js" defer></script>
+  <script src="../../assets/js/main.js" defer></script>
+  <script src="../../assets/js/store.js" defer></script>
+</head>
+<body data-view="products">
+
+<div class="announcement">BTA STORE · KHÁM PHÁ CÔNG NGHỆ THEO CÁCH CỦA BẠN</div>
+<header class="site-header" data-site-header></header>
+
+<main class="shell">
+
+  <!-- Page heading -->
+  <div style="margin-bottom:32px">
+    <span class="eyebrow">BỘ SƯU TẬP CÔNG NGHỆ</span>
+    <h1>Tìm thiết bị dành cho bạn.</h1>
+    <p class="lead" style="margin-top:12px">Khám phá điện thoại, laptop và phụ kiện. Tìm đúng sản phẩm, trong tầm giá của bạn.</p>
+  </div>
+
+  <!-- Catalog layout: sidebar + product grid -->
+  <div class="catalog-layout">
+
+    <!-- Sidebar filters -->
+    <aside class="filters">
+      <div class="panel">
+        <h2>Bộ lọc</h2>
+        <form id="catalog-form">
+          <label class="field wide">
+            Tìm kiếm
+            <input name="search" type="search" placeholder="Tên hoặc mô tả sản phẩm" maxlength="150" />
+          </label>
+          <label class="field wide">
+            Danh mục
+            <select name="category_id" id="category-filter">
+              <option value="">Tất cả danh mục</option>
+            </select>
+          </label>
+          <label class="field">
+            Giá từ (₫)
+            <input name="min_price" type="number" min="0" max="1000000000" placeholder="0" />
+          </label>
+          <label class="field">
+            Giá đến (₫)
+            <input name="max_price" type="number" min="0" max="1000000000" placeholder="Không giới hạn" />
+          </label>
+          <button class="button wide" type="submit">Áp dụng</button>
+          <button class="button ghost wide" type="reset" style="margin-top:8px">Đặt lại</button>
+        </form>
+      </div>
+    </aside>
+
+    <!-- Product section -->
+    <section>
+      <div class="toolbar">
+        <p id="product-count" class="subtle">Đang tải sản phẩm…</p>
+        <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700">
+          Sắp xếp
+          <select id="sort-filter" aria-label="Sắp xếp sản phẩm">
+            <option value="newest">Mới nhất</option>
+            <option value="price-asc">Giá thấp → cao</option>
+            <option value="price-desc">Giá cao → thấp</option>
+            <option value="name">Tên A–Z</option>
+          </select>
+        </label>
+      </div>
+
+      <div id="product-list" class="catalog-grid"></div>
+      <div id="pagination"></div>
+    </section>
+
+  </div><!-- /catalog-layout -->
+</main>
+
+<footer class="site-footer" data-site-footer></footer>
+
+</body>
+</html>

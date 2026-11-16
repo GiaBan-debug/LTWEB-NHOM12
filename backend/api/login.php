@@ -4,16 +4,9 @@
 
 declare(strict_types=1);
 
-header('Content-Type: application/json; charset=utf-8');
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: POST, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type');
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') exit;
+require_once __DIR__ . '/../includes/bootstrap.php';
 
-if (session_status() === PHP_SESSION_NONE) session_start();
-
-require_once __DIR__ . '/../config/database.php';
-require_once __DIR__ . '/../includes/functions.php';
+applyApiCors(['POST', 'OPTIONS']);
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
@@ -22,8 +15,9 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 $body     = getJsonBody();
-$email    = trim($body['email']    ?? '');
-$password = trim($body['password'] ?? '');
+$email    = inputString($body, 'email', 150, true);
+$password = $body['password'] ?? '';
+if (!is_string($password) || strlen($password) > 72) jsonResponse(false, null, 'Mật khẩu không hợp lệ.', 422);
 
 if (!filter_var($email, FILTER_VALIDATE_EMAIL) || $password === '') {
     jsonResponse(false, null, 'Email hoặc mật khẩu không hợp lệ', 422);

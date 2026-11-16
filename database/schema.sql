@@ -1,9 +1,5 @@
 
-CREATE DATABASE IF NOT EXISTS ltweb_nhom12
-  CHARACTER SET utf8mb4
-  COLLATE utf8mb4_unicode_ci;
-
-USE ltweb_nhom12;
+-- Tạo/chọn database trong phpMyAdmin trước khi import. Tương thích shared hosting.
 
 -- ----------------------------
 -- Bảng người dùng
@@ -105,6 +101,9 @@ CREATE TABLE IF NOT EXISTS orders (
     id          INT UNSIGNED  AUTO_INCREMENT PRIMARY KEY,
     user_id     INT UNSIGNED  NOT NULL,
     total_price DECIMAL(15,2) NOT NULL DEFAULT 0,
+    receiver_name VARCHAR(100) NOT NULL DEFAULT '',
+    phone       VARCHAR(15) NOT NULL DEFAULT '',
+    checkout_key VARCHAR(64) NULL,
     status      ENUM('pending','processing','shipped','completed','cancelled')
                               NOT NULL DEFAULT 'pending',
     address     TEXT          NULL,
@@ -115,6 +114,7 @@ CREATE TABLE IF NOT EXISTS orders (
         FOREIGN KEY (user_id) REFERENCES users(id)
         ON DELETE RESTRICT ON UPDATE CASCADE,
     INDEX idx_order_user   (user_id),
+    UNIQUE KEY uq_checkout (user_id, checkout_key),
     INDEX idx_order_status (status)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -127,6 +127,8 @@ CREATE TABLE IF NOT EXISTS order_items (
     product_id INT UNSIGNED  NOT NULL,
     quantity   INT UNSIGNED  NOT NULL DEFAULT 1,
     unit_price DECIMAL(15,2) NOT NULL,
+    product_name VARCHAR(200) NOT NULL DEFAULT '',
+    image      VARCHAR(255) NULL,
     CONSTRAINT fk_orderitem_order
         FOREIGN KEY (order_id) REFERENCES orders(id)
         ON DELETE CASCADE ON UPDATE CASCADE,
