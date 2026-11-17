@@ -55,6 +55,8 @@ try {
   const encode = value => Buffer.from(JSON.stringify(value)).toString('base64url');
   const forged=encode({alg:'none',kid:'test'})+'.'+encode({sub:'admin',aud:'bta-store',email:'admin@ltweb.com',role:'admin',exp:Math.floor(Date.now()/1000)+3600})+'.';
   await firebase.call('firebase-session.php','POST',{id_token:forged},401);
+  await firebase.call('firebase-auth.php','POST',{firebase_uid:'firebase_demo_admin'},422);
+  await firebase.call('firebase-auth.php','POST',{id_token:forged},401);
   await firebase.call('me.php','GET',undefined,401);
   await a.call('me.php','PUT',{name:'Nguyễn Văn A',phone:'',address:''});
   for(const path of ['/vendor/autoload.php','/var/firebase-public-keys.json','/composer.lock','/backend/config/cacert.pem']) { const r=await firebase.context.get(path); check(r.status()===404,'Private path blocked '+path); }

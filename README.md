@@ -38,15 +38,24 @@ Nếu PHP nằm chỗ khác:
 run-demo.cmd -PhpPath "D:\xampp\php\php.exe"
 ```
 
-## Tài khoản demo
+## Tài khoản demo & Xác thực Firebase
 
-| Vai trò | Email | Mật khẩu |
-| --- | --- | --- |
-| Admin | admin@ltweb.com | 123456 |
-| Khách hàng | user1@ltweb.com | 123456 |
-| Khách hàng | user2@ltweb.com | 123456 |
+| Vai trò | Email đăng nhập | Mật khẩu | Firebase UID (seed) | Ghi chú |
+| --- | --- | --- | --- | --- |
+| Admin | admin@ltweb.com | 123456 | NULL | Quản trị Dashboard, Sản phẩm, Đơn hàng |
+| Khách hàng 1 | user1@ltweb.com | 123456 | NULL | Đã có sẵn 3 đơn hàng ở các trạng thái |
+| Khách hàng 2 | user2@ltweb.com | 123456 | NULL | Đã có 2 đơn hàng (hoàn thành, đã hủy) |
 
-Áp dụng cho database mới tạo từ seed hiện tại. Database đã import seed cũ không tự đổi mật khẩu; hãy đăng ký tài khoản khách mới hoặc cập nhật hash trong DB của bạn. Không dùng mật khẩu demo khi triển khai kinh doanh thật.
+Chọn cơ chế bằng `AUTH_MODE`:
+1. **`legacy` (kiểm thử local):** Email/mật khẩu bcrypt qua `backend/api/login.php`, dùng tài khoản seed ở bảng trên.
+2. **`firebase` (mặc định):** đăng nhập Google qua Firebase Web SDK, gửi **ID token có chữ ký** tới `backend/api/firebase-session.php`. Route tương thích `firebase-auth.php` cũng xác minh đầy đủ; không chấp nhận UID do client tự gửi. Email/Password Firebase hiện chưa bật.
+
+UID trong dữ liệu seed để `NULL`; các chuỗi UID demo không phải tài khoản Firebase. Xem `docs/TV5_FIREBASE.md` để liên kết tài khoản cũ có kiểm soát, giữ lịch sử và cấp quyền admin.
+
+Tài liệu chi tiết:
+- Sơ đồ ERD & Đặc tả CSDL: [`docs/DATABASE_ERD.md`](docs/DATABASE_ERD.md)
+- Kịch bản demo & Checklist trước báo cáo: [`docs/KICH_BAN_DEMO.md`](docs/KICH_BAN_DEMO.md)
+- File migration TV6 (Firebase UID, Profile, Vận chuyển, Specs): [`database/migration-tv6.sql`](database/migration-tv6.sql)
 
 ## Dùng MySQL/XAMPP sẵn có
 

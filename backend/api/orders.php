@@ -42,9 +42,15 @@ if (mb_strlen($address) < 5) throw new ApiException('Địa chỉ phải có ít
 if (!preg_match('/^[a-zA-Z0-9-]{16,64}$/', $key)) throw new ApiException('Mã lượt đặt hàng không hợp lệ.');
 $result = transaction($db, function () use ($db, $userId, $name, $phone, $address, $note, $key): array {
     lockUser($db, $userId);
-    $stmt = $db->prepare('SELECT id, total_price FROM orders WHERE user_id = ? AND checkout_key = ?');
+    $stmt = $db->prepare('SELECT id, total_price, shipping_fee FROM orders WHERE user_id = ? AND checkout_key = ?');
     $stmt->execute([$userId, $key]);
-    if ($existing = $stmt->fetch()) return ['order_id' => (int) $existing['id'], 'total_amount' => (int) $existing['total_price']];
+    if ($existing = $stmt->fetch()) {
+        return [
+            'order_id' => (int) $existing['id'],
+            'total_amount' => (int) $existing['total_price'],
+            'shipping_fee' => (int) ($existing['shipping_fee'] ?? 0),
+        ];
+    }
     $stmt = $db->prepare('SELECT ci.product_id, ci.quantity, p.name, p.thumbnail, p.price, p.stock, p.status FROM cart_items ci JOIN carts c ON c.id = ci.cart_id JOIN products p ON p.id = ci.product_id WHERE c.user_id = ? ORDER BY p.id FOR UPDATE');
     $stmt->execute([$userId]);
     $items = $stmt->fetchAll();

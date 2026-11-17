@@ -109,6 +109,6 @@ Không chạy test ghi dữ liệu vào database demo đang dùng trình bày. �
 - `tests/firebase-browser.mjs`: SDK Firebase thật, Google-only UI và popup chuyển tới accounts.google.com; đóng lại mà không đăng nhập/chấp thuận bằng tài khoản người dùng.
 - `tests/firebase-live-smoke.php`: lấy public keys bằng HTTPS và từ chối token giả với keys thật; probe Email/Password tài khoản không tồn tại không tạo user/gửi thư. PASSWORD_LOGIN_DISABLED là bình thường khi project chỉ bật Google.
 
-Kết quả hiện tại: 36 assertions TV5 unit/MySQL, 49 assertions TV5 API, 73 assertions API hồi quy legacy và 29 assertions browser hồi quy legacy đều qua. 7 kiểm tra giao diện Firebase qua với SDK thật và popup chuyển tới **accounts.google.com**, không nhập/chọn tài khoản. Chứng thư Google trả HTTP 200, token giả bị từ chối 401. Các kết quả này không thay thế bước đăng nhập Google thật do người dùng thực hiện.
+Kết quả hiện tại: 36 assertions TV5 unit/MySQL, 51 assertions TV5 API, 74 assertions API hồi quy legacy và 29 assertions browser hồi quy legacy đều qua. 7 kiểm tra giao diện Firebase qua với SDK thật và popup chuyển tới **accounts.google.com**, không nhập/chọn tài khoản. Chứng thư Google trả HTTP 200, token giả bị từ chối 401. Các kết quả này không thay thế bước đăng nhập Google thật do người dùng thực hiện.
 
 Lần đăng nhập Google thật/chọn tài khoản là bước người dùng thực hiện trực tiếp. Chưa có kết quả kiểm thử đầy đủ với tài khoản Google cá nhân hoặc hosting miễn phí trong phiên này; không ghi là đã thành công khi chưa thực hiện.

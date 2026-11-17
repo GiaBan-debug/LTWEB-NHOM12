@@ -26,7 +26,7 @@ try {
   await page.goto('http://localhost:8014/frontend/pages/register.html');
   await page.waitForFunction(()=>!document.querySelector('#btn-google').disabled);
   assert.equal(await page.locator('#email-password-fields').isVisible(),false); checks++;
-  assert.equal(await page.locator('#btn-google').textContent(),'Tiếp tục bằng Google'); checks++;
+  assert.equal((await page.locator('#btn-google').textContent()).trim(),'Tiếp tục bằng Google'); checks++;
   assert.deepEqual(errors,[]); checks++;
   console.log('PASS: '+checks+' Firebase browser checks (real SDK/popup; no Google account signed in).');
 } finally { await browser.close(); }
