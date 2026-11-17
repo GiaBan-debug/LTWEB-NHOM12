@@ -2,10 +2,18 @@
 declare(strict_types=1);
 require_once __DIR__ . '/../includes/bootstrap.php';
 require_once __DIR__ . '/../includes/orders.php';
-allowMethods(['GET', 'POST']);
+require_once __DIR__ . '/../includes/checkout.php';
+allowMethods(['GET', 'POST', 'PUT']);
 requireLogin();
 $db = getDB();
 $userId = sessionUserId();
+if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
+    $input = getJsonBody();
+    $id = positiveInt($input['id'] ?? null) ?? throw new ApiException('Mã đơn không hợp lệ.');
+    if (($input['action'] ?? '') !== 'cancel') throw new ApiException('Thao tác không hợp lệ.');
+    cancelCustomerOrder($db, $id, $userId);
+    jsonResponse(true, getOrder($db, $id, $userId), 'Đã hủy đơn và hoàn tồn kho.');
+}
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     if (isset($_GET['id'])) {
         $id = positiveInt($_GET['id']) ?? throw new ApiException('Mã đơn không hợp lệ.');
@@ -21,12 +29,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     jsonResponse(true, ['items' => $stmt->fetchAll(), 'page' => $page, 'total_pages' => max(1, (int) ceil($total / 10)), 'total' => $total]);
 }
 $input = getJsonBody();
+if (authMode() === 'firebase' && emailVerificationRequired() && !getCurrentUser()['email_verified']) {
+    throw new ApiException('Hãy xác minh email trước khi đặt hàng.', 403, ['code' => 'EMAIL_NOT_VERIFIED']);
+}
 $name = inputString($input, 'receiver_name', 100, true);
-$phone = inputString($input, 'phone', 15, true);
+$phone = normalizePhone(inputString($input, 'phone', 30, true));
 $address = inputString($input, 'address', 255, true);
 $note = inputString($input, 'note', 500);
 $key = inputString($input, 'checkout_key', 64, true);
-if (mb_strlen($name) < 2 || mb_strlen($address) < 5 || !preg_match('/^(0|\\+84)\\d{9}$/', $phone) || !preg_match('/^[a-zA-Z0-9-]{16,64}$/', $key)) throw new ApiException('Hãy kiểm tra họ tên, điện thoại và địa chỉ.');
+if (mb_strlen($name) < 2) throw new ApiException('Họ tên phải có ít nhất 2 ký tự.', 422, ['errors' => ['receiver_name' => 'Nhập họ tên có ít nhất 2 ký tự.']]);
+if (mb_strlen($address) < 5) throw new ApiException('Địa chỉ phải có ít nhất 5 ký tự.', 422, ['errors' => ['address' => 'Nhập địa chỉ có ít nhất 5 ký tự.']]);
+if (!preg_match('/^[a-zA-Z0-9-]{16,64}$/', $key)) throw new ApiException('Mã lượt đặt hàng không hợp lệ.');
 $result = transaction($db, function () use ($db, $userId, $name, $phone, $address, $note, $key): array {
     lockUser($db, $userId);
     $stmt = $db->prepare('SELECT id, total_price FROM orders WHERE user_id = ? AND checkout_key = ?');
@@ -41,7 +54,8 @@ $result = transaction($db, function () use ($db, $userId, $name, $phone, $addres
         if ($item['status'] !== 'active' || (int) $item['quantity'] > (int) $item['stock']) throw new ApiException('Sản phẩm không đủ tồn kho hoặc đã ngừng bán: ' . $item['name'], 409);
         $total += (int) $item['price'] * (int) $item['quantity'];
     }
-    $db->prepare('INSERT INTO orders (user_id, total_price, receiver_name, phone, address, note, checkout_key) VALUES (?, ?, ?, ?, ?, ?, ?)')->execute([$userId, $total, $name, $phone, $address, $note, $key]);
+    $amounts = orderAmounts($total);
+    $db->prepare('INSERT INTO orders (user_id, total_price, shipping_fee, receiver_name, phone, address, note, checkout_key) VALUES (?, ?, ?, ?, ?, ?, ?, ?)')->execute([$userId, $amounts['total'], $amounts['shipping_fee'], $name, $phone, $address, $note, $key]);
     $id = (int) $db->lastInsertId();
     $insert = $db->prepare('INSERT INTO order_items (order_id, product_id, quantity, unit_price, product_name, image) VALUES (?, ?, ?, ?, ?, ?)');
     $stock = $db->prepare('UPDATE products SET stock = stock - ? WHERE id = ? AND stock >= ?');
@@ -51,6 +65,6 @@ $result = transaction($db, function () use ($db, $userId, $name, $phone, $addres
         if ($stock->rowCount() !== 1) throw new ApiException('Tồn kho vừa thay đổi. Hãy thử lại.', 409);
     }
     $db->prepare('DELETE ci FROM cart_items ci JOIN carts c ON c.id = ci.cart_id WHERE c.user_id = ?')->execute([$userId]);
-    return ['order_id' => $id, 'total_amount' => $total];
+    return ['order_id' => $id, 'total_amount' => $amounts['total'], 'subtotal' => $amounts['subtotal'], 'shipping_fee' => $amounts['shipping_fee']];
 });
 jsonResponse(true, $result, 'Đặt hàng thành công.', 201);

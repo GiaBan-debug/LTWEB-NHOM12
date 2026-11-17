@@ -1,10 +1,14 @@
 # Nhóm 12 Store — PHP/MySQL demo
 
+> **Cập nhật TV5 (18/11/2026):** mặc định dùng Firebase **Google sign-in** của project `bta-store`. Xem [hướng dẫn TV5](docs/TV5_FIREBASE.md) để chạy, cấp admin, migration và test. Các tài khoản mật khẩu seed trong bảng bên dưới chỉ áp dụng khi đặt `AUTH_MODE=legacy`; không dùng để đăng nhập Google.
+
 Website bán điện thoại, laptop, tablet và phụ kiện, dành cho đồ án/portfolio. Có dữ liệu MySQL thật, mua hàng COD và quản trị; chưa tích hợp thanh toán hoặc vận chuyển thực tế.
 
 ## Chạy nhanh trên máy Windows hiện tại
 
 Máy đang có PHP tại `C:\xampp\php\php.exe`. MariaDB portable nằm trong `.local-test/`, không cài Windows service và chỉ lắng nghe `127.0.0.1`.
+
+Máy clone mới cần chạy `powershell -ExecutionPolicy Bypass -File scripts/install-dependencies.ps1` một lần để cài thư viện xác minh JWT. Website dùng mạng khi đăng nhập Google. Lần đầu Google tạo tài khoản user; cấp admin bằng script hướng dẫn trong docs/TV5_FIREBASE.md.
 
 Mở **CMD hoặc terminal VS Code**, tại thư mục dự án chạy:
 
@@ -59,7 +63,7 @@ Không cần phpMyAdmin để chạy bản portable. phpMyAdmin là công cụ q
 - Tìm kiếm, lọc danh mục/giá, sắp xếp và phân trang phía server.
 - Đăng ký, đăng nhập, đăng xuất, session và đổi tên hồ sơ.
 - Thêm/xóa sản phẩm, sửa số lượng, kiểm tra tồn kho trong giỏ.
-- Checkout COD, phí giao hàng demo 0 ₫; tính giá phía server, transaction và khóa dữ liệu, chặn gửi lại tạo đơn trùng.
+- Checkout COD: phí ship mặc định 30.000 ₫, miễn phí từ 2.000.000 ₫; server tính và lưu phí tại thời điểm mua, dùng transaction và chặn đơn trùng.
 - Xác nhận, lịch sử, chi tiết và trạng thái đơn theo tài khoản.
 - Admin: dashboard, thêm/sửa/ngừng bán sản phẩm, chọn ảnh có sẵn, thêm danh mục, xem đơn và cập nhật trạng thái.
 - Trạng thái: chờ xác nhận → chuẩn bị → đang giao → hoàn thành; có thể hủy ở hai bước đầu. Hủy hoàn kho một lần; sản phẩm ngừng bán vẫn giữ lịch sử đơn.
@@ -78,7 +82,7 @@ Tạo ZIP chỉ chứa ứng dụng và SQL mẫu bằng `powershell -ExecutionP
 5. Giữ đúng chữ thường `backend` khi upload. Nếu ZIP cũ còn `BACKEND`, đổi tên thành `backend` để URL khớp trên Linux.
 6. Mở domain, thử health `/backend/api/health.php`, rồi đăng nhập, mua hàng và xử lý đơn. Kiểm tra `.env` không truy cập được qua HTTP; file cấu hình backend được chặn bằng `.htaccess`.
 
-Các URL frontend tự tính theo gốc dự án, hỗ trợ domain root và thư mục con. Bản demo không cần composer, cron hoặc SSH. Chưa triển khai lên host trong phiên này; cần kiểm tra lại quy định/cấu hình host mục tiêu.
+Các URL frontend tự tính theo gốc dự án, hỗ trợ domain root và thư mục con. Cần Composer khi chuẩn bị dependency; host có thể dùng thư mục vendor đã build sẵn nên không cần Composer/SSH khi chạy. Chưa triển khai lên host trong phiên này.
 
 ## Kiểm thử
 
@@ -94,6 +98,7 @@ Khởi động MariaDB portable bằng `run-demo.cmd`, sau đó mở terminal **
 ```powershell
 $env:DB_PORT='3307'
 $env:DB_NAME='ltweb_nhom12_test'
+$env:AUTH_MODE='legacy'
 & C:/xampp/php/php.exe -d extension_dir=C:/xampp/php/ext -d extension=pdo_mysql -d extension=mbstring scripts/setup-demo.php
 ./scripts/start.ps1 -Port 8013
 ```

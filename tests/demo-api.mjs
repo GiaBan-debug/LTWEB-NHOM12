@@ -55,12 +55,12 @@ try {
   await a.call('cart.php','POST',{product_id:id,quantity:2});
   await b.call('cart.php','POST',{product_id:id,quantity:2});
   let cart = await a.call('cart.php');
-  check(cart.data.total === 300000 && cart.data.total_items === 2, 'Server cart total');
+  check(cart.data.subtotal === 300000 && cart.data.shipping_fee === 30000 && cart.data.total === 330000 && cart.data.total_items === 2, 'Server cart total including shipping');
   await a.call('cart.php','PUT',{product_id:id,quantity:1});
   await a.call('cart.php','PUT',{product_id:id,quantity:2});
   const shipping = {receiver_name:'Người kiểm thử',phone:'0912345678',address:'123 Đường kiểm thử, TP.HCM',note:'Test',checkout_key:'test-key-a-' + Date.now()};
   const order = await a.call('orders.php','POST',{...shipping,total_amount:1},201);
-  check(order.data.total_amount === 300000, 'Client cannot set order price');
+  check(order.data.total_amount === 330000, 'Client cannot set order price or shipping');
   const orderId = order.data.order_id;
   check((await a.call('cart.php')).data.is_empty, 'Cart cleared after checkout');
   const retry = await a.call('orders.php','POST',shipping,201);

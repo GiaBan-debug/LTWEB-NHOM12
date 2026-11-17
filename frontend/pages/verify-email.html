@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Xác minh email · BTA Store</title>
+    <link rel="stylesheet" href="../assets/css/store.css" />
+    <link rel="stylesheet" href="../assets/css/auth.css" />
+  </head>
+  <body>
+    <header class="site-header" data-site-header></header>
+    <main class="auth-page">
+      <section class="auth-card">
+        <h1>Xác minh email</h1>
+        <p class="auth-lead">
+          Mở thư Firebase gửi tới email đăng ký và bấm liên kết xác minh. Sau đó
+          quay lại đây để cập nhật trạng thái.
+        </p>
+        <p id="verify-address"></p>
+        <div id="auth-status" class="auth-status" role="status" hidden></div>
+        <button class="btn-auth" id="check-verification">
+          Tôi đã xác minh email</button
+        ><button
+          class="button secondary"
+          style="margin-top: 12px; width: 100%"
+          id="resend-verification"
+        >
+          Gửi lại email
+        </button>
+        <p class="auth-alt">
+          <a href="cart.html">Quay lại giỏ hàng</a> ·
+          <a href="login.html">Đăng nhập</a>
+        </p>
+      </section>
+    </main>
+    <footer class="site-footer" data-site-footer></footer>
+    <script src="../assets/js/shop.js"></script>
+    <script src="../assets/js/auth.js"></script>
+    <script src="../assets/js/main.js"></script>
+    <script>
+      const statusEl = document.querySelector("#auth-status");
+      document.addEventListener("DOMContentLoaded", async () => {
+        try {
+          const user = await Auth.currentUser();
+          if (!user) {
+            location.href = "login.html?redirect=verify-email.html";
+            return;
+          }
+          document.querySelector("#verify-address").textContent = user.email;
+        } catch (error) {
+          Auth.setStatus(statusEl, error.message, "error");
+        }
+      });
+      async function verifyAction(button, action) {
+        button.disabled = true;
+        try {
+          await action();
+        } catch (error) {
+          Auth.setStatus(statusEl, error.message, "error");
+        } finally {
+          button.disabled = false;
+        }
+      }
+      document
+        .querySelector("#check-verification")
+        .addEventListener("click", (event) =>
+          verifyAction(event.currentTarget, async () => {
+            const user = await Auth.refreshVerification();
+            await Auth.mountHeader();
+            Auth.setStatus(
+              statusEl,
+              user.email_verified
+                ? "Email đã xác minh. Bạn có thể đặt hàng."
+                : "Email chưa được xác minh. Hãy mở thư và bấm liên kết rồi thử lại.",
+              user.email_verified ? "ok" : "error",
+            );
+          }),
+        );
+      document
+        .querySelector("#resend-verification")
+        .addEventListener("click", (event) =>
+          verifyAction(event.currentTarget, async () => {
+            await Auth.sendVerification();
+            Auth.setStatus(
+              statusEl,
+              "Đã gửi email. Hãy kiểm tra hộp thư và thư rác.",
+              "ok",
+            );
+          }),
+        );
+    </script>
+  </body>
+</html>

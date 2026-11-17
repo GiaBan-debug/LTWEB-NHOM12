@@ -4,6 +4,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/../includes/bootstrap.php';
+require_once __DIR__ . '/../includes/checkout.php';
 
 applyApiCors(['GET', 'PUT', 'OPTIONS']);
 
@@ -19,13 +20,11 @@ if (!$user) {
 if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
     $input = getJsonBody();
     $name = inputString($input, 'name', 100, true);
-    getDB()->prepare('UPDATE users SET name = ? WHERE id = ?')->execute([$name, $user['id']]);
-    $_SESSION['user']['name'] = $user['name'] = $name;
+    $phone = array_key_exists('phone', $input) ? inputString($input, 'phone', 30) : $user['phone'];
+    $phone = $phone === '' ? '' : normalizePhone($phone);
+    $address = array_key_exists('address', $input) ? inputString($input, 'address', 255) : $user['address'];
+    getDB()->prepare('UPDATE users SET name = ?, phone = ?, address = ? WHERE id = ?')->execute([$name, $phone, $address, $user['id']]);
+    $user = getCurrentUser();
 }
 
-jsonResponse(true, [
-    'id'    => $user['id'] ?? null,
-    'name'  => $user['name'] ?? '',
-    'email' => $user['email'] ?? '',
-    'role'  => $user['role'] ?? 'user',
-], 'OK');
+jsonResponse(true, publicUser($user), 'OK');
