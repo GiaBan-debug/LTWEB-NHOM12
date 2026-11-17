@@ -34,15 +34,22 @@ Nếu PHP nằm chỗ khác:
 run-demo.cmd -PhpPath "D:\xampp\php\php.exe"
 ```
 
-## Tài khoản demo
+## Tài khoản demo & Xác thực Firebase
 
-| Vai trò | Email | Mật khẩu |
-| --- | --- | --- |
-| Admin | admin@ltweb.com | 123456 |
-| Khách hàng | user1@ltweb.com | 123456 |
-| Khách hàng | user2@ltweb.com | 123456 |
+| Vai trò | Email đăng nhập | Mật khẩu | Firebase UID (Demo/Live) | Ghi chú |
+| --- | --- | --- | --- | --- |
+| Admin | admin@ltweb.com | 123456 | firebase_demo_admin | Quản trị Dashboard, Sản phẩm, Đơn hàng |
+| Khách hàng 1 | user1@ltweb.com | 123456 | firebase_demo_user1 | Đã có sẵn 3 đơn hàng ở các trạng thái |
+| Khách hàng 2 | user2@ltweb.com | 123456 | firebase_demo_user2 | Đã có 2 đơn hàng (hoàn thành, đã hủy) |
 
-Áp dụng cho database mới tạo từ seed hiện tại. Database đã import seed cũ không tự đổi mật khẩu; hãy đăng ký tài khoản khách mới hoặc cập nhật hash trong DB của bạn. Không dùng mật khẩu demo khi triển khai kinh doanh thật.
+Hệ thống hỗ trợ song song 2 cơ chế:
+1. **Đăng nhập truyền thống:** Email/mật khẩu bcrypt qua `backend/api/login.php`.
+2. **Cầu nối Firebase Auth:** Đăng nhập qua Firebase Web SDK, lấy Firebase ID Token/UID gửi tới `backend/api/firebase-auth.php` để đối soát và cấp phiên PHP Session an toàn.
+
+Tài liệu chi tiết:
+- Sơ đồ ERD & Đặc tả CSDL: [`docs/DATABASE_ERD.md`](docs/DATABASE_ERD.md)
+- Kịch bản demo & Checklist trước báo cáo: [`docs/KICH_BAN_DEMO.md`](docs/KICH_BAN_DEMO.md)
+- File migration TV6 (Firebase UID, Profile, Vận chuyển, Specs): [`database/migration-tv6.sql`](database/migration-tv6.sql)
 
 ## Dùng MySQL/XAMPP sẵn có
 
