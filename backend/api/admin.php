@@ -87,22 +87,31 @@ if ($resource === 'categories' && $method === 'POST') {
     jsonResponse(true, ['id' => (int) $db->lastInsertId()], 'Đã thêm danh mục.', 201);
 }
 if ($resource === 'orders' && $method === 'PUT' && $id) {
-    $next = inputString($input, 'status', 20, true);
-    transaction($db, function () use ($db, $id, $next): void {
+    $next = isset($input['status']) ? inputString($input, 'status', 20) : null;
+    $carrier = isset($input['carrier']) ? inputString($input, 'carrier', 100) : null;
+    $trackingCode = isset($input['tracking_code']) ? inputString($input, 'tracking_code', 100) : null;
+    $estimatedDelivery = isset($input['estimated_delivery']) ? inputString($input, 'estimated_delivery', 20) : null;
+
+    transaction($db, function () use ($db, $id, $next, $carrier, $trackingCode, $estimatedDelivery): void {
         $stmt = $db->prepare('SELECT status FROM orders WHERE id = ? FOR UPDATE');
         $stmt->execute([$id]);
         $current = $stmt->fetchColumn();
         if ($current === false) throw new ApiException('Không tìm thấy đơn.', 404);
-        if ($current === $next) return;
-        $allowed = ['pending' => ['processing', 'cancelled'], 'processing' => ['shipped', 'cancelled'], 'shipped' => ['completed'], 'completed' => [], 'cancelled' => []];
-        if (!in_array($next, $allowed[$current] ?? [], true)) throw new ApiException('Không thể chuyển trạng thái đơn hàng như yêu cầu.', 409);
-        if ($next === 'cancelled') {
-            $stmt = $db->prepare('SELECT product_id, quantity FROM order_items WHERE order_id = ? ORDER BY product_id');
-            $stmt->execute([$id]);
-            $update = $db->prepare('UPDATE products SET stock = stock + ? WHERE id = ?');
-            foreach ($stmt->fetchAll() as $item) $update->execute([$item['quantity'], $item['product_id']]);
+        if ($next !== null && $current !== $next) {
+            $allowed = ['pending' => ['processing', 'cancelled'], 'processing' => ['shipped', 'cancelled'], 'shipped' => ['completed'], 'completed' => [], 'cancelled' => []];
+            if (!in_array($next, $allowed[$current] ?? [], true)) throw new ApiException('Không thể chuyển trạng thái đơn hàng như yêu cầu.', 409);
+            if ($next === 'cancelled') {
+                $stmt = $db->prepare('SELECT product_id, quantity FROM order_items WHERE order_id = ? ORDER BY product_id');
+                $stmt->execute([$id]);
+                $update = $db->prepare('UPDATE products SET stock = stock + ? WHERE id = ?');
+                foreach ($stmt->fetchAll() as $item) $update->execute([$item['quantity'], $item['product_id']]);
+            }
+            $db->prepare('UPDATE orders SET status = ? WHERE id = ?')->execute([$next, $id]);
         }
-        $db->prepare('UPDATE orders SET status = ? WHERE id = ?')->execute([$next, $id]);
+        if ($carrier !== null || $trackingCode !== null || $estimatedDelivery !== null) {
+            $db->prepare('UPDATE orders SET carrier = COALESCE(?, carrier), tracking_code = COALESCE(?, tracking_code), estimated_delivery = COALESCE(?, estimated_delivery) WHERE id = ?')
+               ->execute([$carrier, $trackingCode, $estimatedDelivery ?: null, $id]);
+        }
     });
     jsonResponse(true, getOrder($db, $id), 'Đã cập nhật đơn hàng.');
 }

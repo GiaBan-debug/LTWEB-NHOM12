@@ -284,7 +284,7 @@
     const fd = new FormData(els.form);
     const values = {
       receiver_name: String(fd.get("receiver_name")).trim(),
-      phone: String(fd.get("phone")).trim(),
+      phone: String(fd.get("phone")).trim().replace(/[\s.\-()]/g, ""),
       address: String(fd.get("address")).trim(),
       note: String(fd.get("note")).trim(),
       checkout_key: checkoutKey,
