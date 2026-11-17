@@ -34,9 +34,15 @@ try {
   await b.call('login.php','POST',{email:'user2@ltweb.com',password:'123456'});
   await admin.call('login.php','POST',{email:'admin@ltweb.com',password:'123456'});
   await a.call('admin.php','GET',undefined,403);
-  const profile = await a.call('me.php','PUT',{name:'Khách thử nghiệm'});
-  check(profile.data.name === 'Khách thử nghiệm' && !profile.data.password, 'Profile response safe');
-  await a.call('me.php','PUT',{name:'Nguyễn Văn A'});
+  const profile = await a.call('me.php','PUT',{name:'Khách thử nghiệm',phone:'0912345678',address:'123 Lê Lợi, TP.HCM'});
+  check(profile.data.name === 'Khách thử nghiệm' && profile.data.phone === '0912345678' && !profile.data.password, 'Profile response safe');
+  await a.call('me.php','PUT',{name:'Nguyễn Văn A',phone:'0912345678',address:'123 Lê Lợi, TP.HCM'});
+  
+  // Test Firebase Auth bridge
+  const fbLogin = await guest.call('firebase-auth.php','POST',{firebase_uid:'firebase_demo_user1'});
+  check(fbLogin.data.email === 'user1@ltweb.com' && fbLogin.data.role === 'user', 'Firebase auth bridge demo user');
+  await guest.call('logout.php','POST');
+  await guest.call('firebase-auth.php','POST',{firebase_uid:'non_existent_uid_123'},404);
   const cats = await guest.call('categories.php');
   check(cats.data.length >= 4, 'Seed categories');
   const products = await guest.call('products.php?sort_by=price&sort_dir=ASC&limit=3');
@@ -58,7 +64,7 @@ try {
   check(cart.data.total === 300000 && cart.data.total_items === 2, 'Server cart total');
   await a.call('cart.php','PUT',{product_id:id,quantity:1});
   await a.call('cart.php','PUT',{product_id:id,quantity:2});
-  const shipping = {receiver_name:'Người kiểm thử',phone:'0912345678',address:'123 Đường kiểm thử, TP.HCM',note:'Test',checkout_key:'test-key-a-' + Date.now()};
+  const shipping = {receiver_name:'Người kiểm thử',phone:'0912 345 678',address:'123 Đường kiểm thử, TP.HCM',note:'Test',checkout_key:'test-key-a-' + Date.now()};
   const order = await a.call('orders.php','POST',{...shipping,total_amount:1},201);
   check(order.data.total_amount === 300000, 'Client cannot set order price');
   const orderId = order.data.order_id;

@@ -11,4 +11,5 @@ foreach ($relativePath in @('index.php', '.htaccess', '.env.example', 'README.md
 $archivePath = Join-Path $outputDirectory 'nhom12-store-demo.zip'
 if (Test-Path -LiteralPath $archivePath) { [IO.File]::Delete($archivePath) }
 [IO.Compression.ZipFile]::CreateFromDirectory($packageDirectory, $archivePath)
+Remove-Item -LiteralPath $packageDirectory -Recurse -Force
 Write-Output "Hosting archive: $archivePath"
