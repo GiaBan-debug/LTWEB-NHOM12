@@ -14,4 +14,8 @@ Copy-Item -LiteralPath (Join-Path $projectRoot 'var/.htaccess') -Destination (Jo
 $archivePath = Join-Path $outputDirectory 'nhom12-store-demo.zip'
 if (Test-Path -LiteralPath $archivePath) { [IO.File]::Delete($archivePath) }
 [IO.Compression.ZipFile]::CreateFromDirectory($packageDirectory, $archivePath)
+$resolvedPackage = (Resolve-Path -LiteralPath $packageDirectory).Path
+$stagingRoot = [IO.Path]::GetFullPath((Join-Path $projectRoot '.local-test')) + [IO.Path]::DirectorySeparatorChar
+if (!$resolvedPackage.StartsWith($stagingRoot, [StringComparison]::OrdinalIgnoreCase)) { throw 'Package cleanup path is outside the staging directory.' }
+Remove-Item -LiteralPath $resolvedPackage -Recurse -Force
 Write-Output "Hosting archive: $archivePath"

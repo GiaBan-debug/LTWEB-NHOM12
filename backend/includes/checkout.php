@@ -16,7 +16,7 @@ function orderAmounts(int $subtotal): array
 }
 function normalizePhone(string $phone): string
 {
-    $phone = preg_replace('/[\s.\-]+/u', '', trim($phone));
+    $phone = preg_replace('/[\s.\-()]+/u', '', trim($phone));
     if (!preg_match('/^(0|\+84)[0-9]{9}$/D', $phone)) throw new ApiException('Số điện thoại không hợp lệ.', 422, ['errors' => ['phone' => 'Nhập số Việt Nam, ví dụ 0912345678 hoặc +84912345678.']]);
     return str_starts_with($phone, '+84') ? '0' . substr($phone, 3) : $phone;
 }

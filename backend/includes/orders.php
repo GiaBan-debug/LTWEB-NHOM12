@@ -2,7 +2,7 @@
 declare(strict_types=1);
 function getOrder(PDO $db, int $id, ?int $userId = null): array
 {
-    $sql = 'SELECT id, user_id, total_price AS total_amount, shipping_fee, status, receiver_name, phone, address, note, created_at FROM orders WHERE id = ?';
+    $sql = 'SELECT id, user_id, total_price AS total_amount, shipping_fee, carrier, tracking_code, estimated_delivery, status, receiver_name, phone, address, note, created_at FROM orders WHERE id = ?';
     $params = [$id];
     if ($userId !== null) { $sql .= ' AND user_id = ?'; $params[] = $userId; }
     $stmt = $db->prepare($sql);
