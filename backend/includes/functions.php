@@ -4,11 +4,12 @@
 
 declare(strict_types=1);
 
-/** CORS cho frontend local, cho phép cookie session (không dùng *). */
+/** Same-origin by default; allow cross-origin credentials only for configured exact origins. */
 function applyApiCors(array $methods = ['GET', 'POST', 'OPTIONS']): void
 {
     $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
-    if ($origin !== '' && preg_match('#^https?://(localhost|127\.0\.0\.1)(:\d+)?$#i', $origin) === 1) {
+    $allowed = array_filter(array_map('trim', explode(',', appConfig('APP_ALLOWED_ORIGINS'))));
+    if ($origin !== '' && in_array($origin, $allowed, true)) {
         header('Access-Control-Allow-Origin: ' . $origin);
         header('Access-Control-Allow-Credentials: true');
         header('Access-Control-Allow-Headers: Content-Type, X-CSRF-Token');

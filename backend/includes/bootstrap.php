@@ -2,18 +2,18 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/functions.php';
+require_once __DIR__ . '/errors.php';
 require_once __DIR__ . '/auth.php';
 require_once __DIR__ . '/../config/database.php';
-
-final class ApiException extends RuntimeException
-{
-    public function __construct(string $message, public int $status = 422) { parent::__construct($message); }
-}
 
 set_exception_handler(static function (Throwable $error): void {
     $status = $error instanceof ApiException ? $error->status : 500;
     if ($status === 500) error_log((string) $error);
-    jsonResponse(false, null, $status === 500 ? 'Có lỗi máy chủ. Vui lòng thử lại.' : $error->getMessage(), $status);
+    if (PHP_SAPI === 'cli') {
+        fwrite(STDERR, ($status === 500 ? 'Operation failed; inspect the local error log.' : $error->getMessage()) . PHP_EOL);
+        exit(1);
+    }
+    jsonResponse(false, $error instanceof ApiException && $error->details ? $error->details : null, $status === 500 ? 'Có lỗi máy chủ. Vui lòng thử lại.' : $error->getMessage(), $status);
 });
 
 applyApiCors(['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']);

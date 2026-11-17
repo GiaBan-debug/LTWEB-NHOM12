@@ -1,5 +1,7 @@
 # API bản demo
 
+> Cập nhật TV5: mặc định Firebase Google Auth. Đọc `TV5_FIREBASE.md`; login/register bằng mật khẩu PHP chỉ hoạt động trong AUTH_MODE=legacy. Thêm GET auth-config.php và POST firebase-session.php với body id_token + CSRF.
+
 Gốc URL: `backend/api/` tương đối với thư mục dự án. Không viết cứng localhost hoặc tên thư mục máy cá nhân trong frontend.
 
 Mọi response JSON có `success`, `message`, và `data` khi có dữ liệu. Các lỗi thường dùng: 401 chưa đăng nhập, 403 thiếu quyền/CSRF, 404 không tìm thấy, 409 xung đột dữ liệu/tồn kho/trạng thái, 422 đầu vào không hợp lệ, 500 lỗi máy chủ.
@@ -16,7 +18,7 @@ Frontend và backend chạy cùng origin, gửi cookie session trong mọi reque
 | login.php | POST | email, password | Công khai + CSRF |
 | logout.php | POST | Không cần body | CSRF |
 | me.php | GET | Thông tin session; không trả password | Đăng nhập |
-| me.php | PUT | name | Đăng nhập + CSRF |
+| me.php | PUT | name, phone, address; không sửa role/UID/email | Đăng nhập + CSRF |
 | categories.php | GET | Danh mục kèm product_count đang bán | Công khai |
 | products.php | GET | id hoặc slug để lấy chi tiết | Công khai |
 | products.php | GET | search, category_id, min_price, max_price, sort_by, sort_dir, page, limit | Công khai |
@@ -26,6 +28,7 @@ Frontend và backend chạy cùng origin, gửi cookie session trong mọi reque
 | cart.php | DELETE | Query product_id | Đăng nhập + CSRF |
 | orders.php | POST | receiver_name, phone, address, note, checkout_key | Đăng nhập + CSRF |
 | orders.php | GET | page hoặc id; chỉ đơn của user hiện tại | Đăng nhập |
+| orders.php | PUT | id, action=cancel; chỉ đơn pending của chính user | Đăng nhập + CSRF |
 | admin.php | GET | resource=dashboard/products/categories/orders; products/orders nhận id | Admin |
 | admin.php | GET | products/orders: page, search | Admin |
 | admin.php | POST | resource=products, body thông tin sản phẩm | Admin + CSRF |
@@ -40,6 +43,6 @@ Sản phẩm admin nhận `name`, `category_id`, `price`, `stock`, `description`
 
 Giỏ giới hạn 1–99 sản phẩm mỗi mặt hàng, không vượt tồn kho đang bán. Tổng tiền và giá luôn do server tính. `checkout_key` là chuỗi 16–64 ký tự chữ/số/dấu gạch nối, frontend tạo bằng UUID hoặc random bytes; dùng lại cùng key khi thử lại cùng lượt đặt hàng. Giá trị đã tạo đơn sẽ trả lại mã đơn cũ, không trừ kho lần hai.
 
-Đơn dùng COD, phí giao hàng demo 0 ₫. Chi tiết trả `data.items`, `total_amount`, `receiver_name`, `phone`, `address`, `note`, `status`, `payment_method`, `shipping_fee`. Item lưu tên/ảnh/giá tại lúc mua, không phụ thuộc dữ liệu sản phẩm sau này.
+Đơn dùng COD, phí ship mặc định 30.000 ₫ dưới 2.000.000 ₫ và miễn ship từ ngưỡng đó. Giỏ trả subtotal/shipping_fee/total; đơn lưu snapshot phí, total_amount đã gồm phí. Chi tiết trả `data.items`, `total_amount`, `receiver_name`, `phone`, `address`, `note`, `status`, `payment_method`, `shipping_fee`. Item lưu tên/ảnh/giá tại lúc mua, không phụ thuộc dữ liệu sản phẩm sau này.
 
 Trạng thái hợp lệ: pending → processing → shipped → completed. pending/processing có thể chuyển cancelled và được hoàn kho trong transaction. Lặp lại trạng thái hiện tại không tạo tác dụng phụ; completed/cancelled không chuyển tiếp.

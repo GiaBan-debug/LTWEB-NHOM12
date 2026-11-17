@@ -4,8 +4,8 @@ Options -Indexes
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteRule (^|/)\. - [F,L]
-  RewriteRule ^(database|scripts|tests|docs)(/|$) - [F,L]
+  RewriteRule ^(database|scripts|tests|docs|var|vendor)(/|$) - [F,L]
 </IfModule>
-<FilesMatch "(^\.|\.(sql|log|ini|md|ps1|mjs)$)">
+<FilesMatch "(^\.|^composer\.(json|lock)$|\.(sql|log|ini|md|ps1|mjs)$)">
   Require all denied
 </FilesMatch>
