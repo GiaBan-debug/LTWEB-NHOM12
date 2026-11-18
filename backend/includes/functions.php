@@ -92,3 +92,21 @@ function positiveInt(mixed $value): ?int
     $id = filter_var($value, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1, 'max_range' => 2147483647]]);
     return $id === false ? null : $id;
 }
+
+/** Chuẩn hóa SĐT Việt Nam: bỏ khoảng trắng/dấu chấm/gạch, nhận 0…, +84… và 84…. */
+function normalizePhone(string $raw): ?string
+{
+    $phone = preg_replace('/[\s.\-()]/', '', trim($raw)) ?? '';
+    if ($phone === '') return null;
+    if (preg_match('/^84\d{9}$/', $phone)) $phone = '+' . $phone;
+    if (preg_match('/^\+840(\d{9})$/', $phone, $match)) $phone = '0' . $match[1];
+    if (preg_match('/^840(\d{9})$/', $phone, $match)) $phone = '0' . $match[1];
+    return preg_match('/^(0|\+84)\d{9}$/', $phone) ? $phone : null;
+}
+
+/** Phí giao hàng demo: miễn phí từ 2.000.000 ₫, đơn có hàng dưới mức đó 30.000 ₫. */
+function shippingFee(int $subtotal): int
+{
+    if ($subtotal <= 0) return 0;
+    return $subtotal >= 2000000 ? 0 : 30000;
+}

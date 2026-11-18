@@ -173,6 +173,10 @@
         const { data } = await S.api(
           "orders.php?id=" + encodeURIComponent(params.get("id")),
         );
+        const cancel =
+          data.status === "pending"
+            ? `<form id="cancel-order" class="panel" style="margin-top:16px"><h2>Hủy đơn</h2><p class="subtle">Đơn đang chờ xác nhận. Hủy sẽ hoàn sản phẩm về kho.</p><button class="button danger" type="submit">Yêu cầu hủy đơn</button></form>`
+            : "";
         content.innerHTML =
           S.orderDetail(data) +
           (data.status === 'pending' ? '<button class="button danger" id="cancel-order">Hủy đơn đang chờ</button> ' : '') +
@@ -191,7 +195,7 @@
           ? data.items
               .map(
                 (o) =>
-                  `<article class="panel"><div class="order-head"><h2>Đơn #${o.id}</h2><span class="status ${e(o.status)}">${e(S.labels[o.status])}</span></div><p class="subtle">${e(o.created_at)}</p><div class="order-head"><strong>${S.money(o.total_amount)}</strong><a class="button secondary small" href="${S.page("order-history", "?id=" + o.id)}">Xem chi tiết →</a></div></article>`,
+                  `<article class="panel"><div class="order-head"><h2>Đơn #${o.id}</h2><span class="status ${e(o.status)}">${e(S.labels[o.status])}</span></div><p class="subtle">${e(o.created_at)} · Tạm tính ${S.money(o.total_amount)} · Phí giao ${S.money(o.shipping_fee || 0)}</p><div class="order-head"><strong>${S.money(S.payable(o))}</strong><a class="button secondary small" href="${S.page("order-history", "?id=" + o.id)}">Xem chi tiết →</a></div></article>`,
               )
               .join("")
           : `<div class="empty"><h2>Bạn chưa có đơn hàng</h2><p>Chọn một sản phẩm yêu thích để bắt đầu.</p><a class="button" href="${S.page("products")}">Khám phá sản phẩm</a></div>`;
@@ -207,26 +211,59 @@
     if (view === "profile") {
       const { data } = await S.api("me.php");
       const form = document.querySelector("#profile-form");
-      form.elements.name.value = data.name;
-      form.elements.email.value = data.email;
-      form.elements.phone.value = data.phone || '';
-      form.elements.address.value = data.address || '';
+      form.elements.name.value = data.name || "";
+      form.elements.email.value = data.email || "";
+      form.elements.phone.value = data.phone || "";
+      form.elements.address.value = data.address || "";
+      const clearProfileErrors = () => {
+        form.querySelectorAll(".field--invalid").forEach((el) => el.classList.remove("field--invalid"));
+        form.querySelectorAll("[data-error-for]").forEach((el) => { el.textContent = ""; });
+      };
       form.addEventListener("submit", async (ev) => {
         ev.preventDefault();
+        clearProfileErrors();
+        const name = form.elements.name.value.trim();
+        const phoneRaw = form.elements.phone.value.trim();
+        const phone = phoneRaw ? S.normalizePhone(phoneRaw) : "";
+        const address = form.elements.address.value.trim();
+        const errors = {};
+        if (name.length < 2) errors.name = "Vui lòng nhập họ tên.";
+        if (phoneRaw && !phone) errors.phone = "Số điện thoại không hợp lệ (VD: 0912 345 678 hoặc +84 912 345 678).";
+        if (address && address.length < 5) errors.address = "Địa chỉ nhận hàng cần ít nhất 5 ký tự.";
+        if (Object.keys(errors).length) {
+          Object.entries(errors).forEach(([key, message]) => {
+            const small = form.querySelector(`[data-error-for="${key}"]`);
+            if (!small) return;
+            small.textContent = message;
+            small.closest(".field")?.classList.add("field--invalid");
+          });
+          return;
+        }
         const button = form.querySelector("button");
         button.disabled = true;
+        button.textContent = "Đang lưu…";
         try {
-          await S.api("me.php", {
+          const saved = await S.api("me.php", {
             method: "PUT",
-            body: { name: form.elements.name.value, phone: form.elements.phone.value, address: form.elements.address.value },
+            body: { name, phone, address },
           });
+          form.elements.phone.value = saved.data.phone || "";
+          form.elements.address.value = saved.data.address || "";
           await Auth.mountHeader();
           S.toast("Đã cập nhật thông tin.");
         } catch (err) {
+          const fieldErrors = err.payload?.data?.errors || {};
+          Object.entries(fieldErrors).forEach(([key, message]) => {
+            const small = form.querySelector(`[data-error-for="${key}"]`);
+            if (!small) return;
+            small.textContent = message;
+            small.closest(".field")?.classList.add("field--invalid");
+          });
           if (err.status === 401) S.login();
           else S.toast(err.message, true);
         } finally {
           button.disabled = false;
+          button.textContent = "Lưu thông tin";
         }
       });
     }
