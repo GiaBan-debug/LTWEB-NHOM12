@@ -58,6 +58,18 @@
   /* ---- Formatters ---- */
   const money = (value) => Number(value).toLocaleString("vi-VN") + " ₫";
 
+  /* Cùng quy tắc với backend/includes/functions.php normalizePhone(). */
+  function normalizePhone(raw) {
+    let phone = String(raw ?? "").trim().replace(/[\s.\-()]/g, "");
+    if (/^84\d{9}$/.test(phone)) phone = "+" + phone;
+    const withTrunk = phone.match(/^(?:\+84|84)0(\d{9})$/);
+    if (withTrunk) phone = "0" + withTrunk[1];
+    return /^(0|\+84)\d{9}$/.test(phone) ? phone : "";
+  }
+
+  const payable = (order) =>
+    Number(order.total_amount ?? order.total_price ?? 0) + Number(order.shipping_fee || 0);
+
   function image(path) {
     if (typeof path !== "string" || !/^products\/[a-zA-Z0-9_-]+\.(jpg|jpeg|png|webp|avif)$/i.test(path))
       return url("frontend/assets/images/logo1.avif");
@@ -214,7 +226,8 @@
       <p>${escape(o.address)}</p>
     </div>
     <div><b>Thanh toán khi nhận hàng (COD)</b>
-      <p>Phí giao hàng: ${money(o.shipping_fee)}</p>
+      <p>Tạm tính: ${money(o.total_amount)}</p>
+      <p>Phí giao hàng: ${money(o.shipping_fee || 0)}</p>
       <p>Ghi chú: ${escape(o.note || "Không có")}</p>
     </div>
   </div>
@@ -226,7 +239,7 @@
   </div>`).join("")}
   <div class="order-total">
     <b>Tổng thanh toán</b>
-    <strong class="price">${money(o.total_amount)}</strong>
+    <strong class="price">${money(payable(o))}</strong>
   </div>
 </article>`;
   }
@@ -325,7 +338,7 @@
 
   /* ---- Export ---- */
   window.Shop = {
-    url, api, escape, money, image, page,
+    url, api, escape, money, image, page, normalizePhone, payable,
     labels, error, login,
     categoryCard, productCard, pagination,
     toast, updateCartCount, orderDetail,

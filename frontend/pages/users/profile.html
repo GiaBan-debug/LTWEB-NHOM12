@@ -30,8 +30,11 @@
               type="text"
               required
               maxlength="100"
-              autocomplete="name" /></label
-          ><label class="field"
+              autocomplete="name" /><small
+              class="field__error"
+              data-error-for="name"
+            ></small></label
+          >          <label class="field"
             >Email đăng nhập<input name="email" type="email" readonly
           /></label>
           <label class="field"
@@ -49,6 +52,28 @@
           /></label>
           <p class="subtle">
             Email dùng để đăng nhập và được giữ cố định trong bản demo.
+          </p>
+          <label class="field"
+            >Số điện thoại<input
+              name="phone"
+              type="tel"
+              maxlength="25"
+              autocomplete="tel"
+              placeholder="0912 345 678" /><small
+              class="field__error"
+              data-error-for="phone"
+            ></small></label
+          ><label class="field"
+            >Địa chỉ nhận hàng mặc định<input
+              name="address"
+              maxlength="255"
+              autocomplete="street-address" /><small
+              class="field__error"
+              data-error-for="address"
+            ></small></label>
+          <p class="subtle">
+            Điện thoại và địa chỉ này được điền sẵn khi đặt hàng. Bạn vẫn có thể
+            sửa riêng cho từng đơn mà không đổi hồ sơ.
           </p>
           <div id="profile-status" role="status"></div>
           <button class="button">Lưu thông tin</button>

@@ -24,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $stmt = $db->prepare('SELECT COUNT(*) FROM orders WHERE user_id = ?');
     $stmt->execute([$userId]);
     $total = (int) $stmt->fetchColumn();
-    $stmt = $db->prepare("SELECT id, total_price AS total_amount, status, created_at FROM orders WHERE user_id = ? ORDER BY id DESC LIMIT 10 OFFSET $offset");
+    $stmt = $db->prepare("SELECT id, total_price AS total_amount, shipping_fee, status, created_at FROM orders WHERE user_id = ? ORDER BY id DESC LIMIT 10 OFFSET $offset");
     $stmt->execute([$userId]);
     jsonResponse(true, ['items' => $stmt->fetchAll(), 'page' => $page, 'total_pages' => max(1, (int) ceil($total / 10)), 'total' => $total]);
 }
@@ -45,10 +45,14 @@ $result = transaction($db, function () use ($db, $userId, $name, $phone, $addres
     $stmt = $db->prepare('SELECT id, total_price, shipping_fee FROM orders WHERE user_id = ? AND checkout_key = ?');
     $stmt->execute([$userId, $key]);
     if ($existing = $stmt->fetch()) {
+        $subtotal = (int) $existing['total_price'];
+        $fee = (int) ($existing['shipping_fee'] ?? 0);
         return [
             'order_id' => (int) $existing['id'],
-            'total_amount' => (int) $existing['total_price'],
-            'shipping_fee' => (int) ($existing['shipping_fee'] ?? 0),
+            'subtotal' => $subtotal,
+            'total_amount' => $subtotal,
+            'shipping_fee' => $fee,
+            'payable_total' => $subtotal + $fee,
         ];
     }
     $stmt = $db->prepare('SELECT ci.product_id, ci.quantity, p.name, p.thumbnail, p.price, p.stock, p.status FROM cart_items ci JOIN carts c ON c.id = ci.cart_id JOIN products p ON p.id = ci.product_id WHERE c.user_id = ? ORDER BY p.id FOR UPDATE');

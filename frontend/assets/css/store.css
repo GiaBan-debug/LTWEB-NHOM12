@@ -711,6 +711,9 @@ p  { margin-top: 0; }
 .field input:focus,
 .field select:focus { border-color: var(--blue-2); outline: none; }
 .field textarea { min-height: 110px; resize: vertical; }
+.field__error { display: block; color: #b13528; font-size: 13px; min-height: 1em; }
+.field--invalid input,
+.field--invalid textarea { border-color: #b13528; }
 .field.wide, .wide { grid-column: 1/-1; }
 
 .filters .button { width: 100%; margin-top: 4px; }

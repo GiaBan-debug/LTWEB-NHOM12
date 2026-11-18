@@ -8,8 +8,6 @@
   const LOGIN_URL = "login.html";
   const ORDERS_URL = "users/order-history.html";
   const MAX_QTY = 99;
-  const PHONE_RE = /^(0|\+84)\d{9}$/;
-
   const PLACEHOLDER_IMG =
     "data:image/svg+xml;utf8," +
     encodeURIComponent(
@@ -25,6 +23,8 @@
     content: $("#cart-content"),
     list: $("#cart-list"),
     sumItems: $("#sum-items"),
+    sumSubtotal: $("#sum-subtotal"),
+    sumShipping: $("#sum-shipping"),
     sumTotal: $("#sum-total"),
     navCount: $("#nav-count"),
     form: $("#checkout-form"),
@@ -102,11 +102,16 @@
     }
 
     if (res.status === 401) {
-      const back = encodeURIComponent(
-        location.pathname.split("/").pop() || "cart.html",
-      );
-      location.href = `${LOGIN_URL}?redirect=${back}`;
-      throw new Error("Chưa đăng nhập");
+      if (window.Shop) Shop.login();
+      else {
+        const back = encodeURIComponent(
+          (location.pathname.split("/").pop() || "cart.html") + location.search,
+        );
+        location.href = `${LOGIN_URL}?redirect=${back}`;
+      }
+      const err = new Error("Chưa đăng nhập");
+      err.status = 401;
+      throw err;
     }
     if (!res.ok || !data || data.success === false) {
       const err = new Error(
@@ -120,13 +125,16 @@
 
   // ---- Hiển thị ----
   function itemHtml(it) {
+    const stopped = it.status !== "active";
     const warn = !it.available;
-    const stockText =
-      it.stock === 0
+    const stockText = stopped
+      ? "Ngừng bán"
+      : it.stock === 0
         ? "Đã hết hàng"
-        : warn
+        : it.quantity > it.stock
           ? `Chỉ còn ${it.stock} sản phẩm`
           : `Còn ${it.stock} sản phẩm`;
+    const maxQty = Math.min(it.stock, MAX_QTY);
     return `
       <li class="cart-item${warn ? " cart-item--warn" : ""}" data-id="${it.product_id}" data-stock="${it.stock}">
         <img class="cart-item__img" src="${escapeHtml(imageUrl(it.image))}" alt="${escapeHtml(it.name)}" loading="lazy">
@@ -134,9 +142,9 @@
           <h3 class="cart-item__name">${escapeHtml(it.name)}</h3>
           <p class="cart-item__price">${formatVND(it.price)}</p>
           <div class="qty" role="group" aria-label="Số lượng ${escapeHtml(it.name)}">
-            <button type="button" data-action="dec" aria-label="Giảm số lượng" ${it.quantity <= 1 ? "disabled" : ""}>−</button>
-            <input type="number" inputmode="numeric" min="1" max="${Math.min(it.stock, MAX_QTY)}" value="${it.quantity}" aria-label="Số lượng">
-            <button type="button" data-action="inc" aria-label="Tăng số lượng" ${it.quantity >= Math.min(it.stock, MAX_QTY) ? "disabled" : ""}>+</button>
+            <button type="button" data-action="dec" aria-label="Giảm số lượng" ${stopped || it.quantity <= 1 ? "disabled" : ""}>−</button>
+            <input type="number" inputmode="numeric" min="1" max="${Math.max(maxQty, 1)}" value="${it.quantity}" aria-label="Số lượng" ${stopped ? "disabled" : ""}>
+            <button type="button" data-action="inc" aria-label="Tăng số lượng" ${stopped || it.quantity >= maxQty ? "disabled" : ""}>+</button>
           </div>
           <div class="cart-item__stock${warn ? " cart-item__stock--warn" : ""}">${stockText}</div>
         </div>
@@ -165,9 +173,12 @@
     els.content.hidden = false;
     els.list.innerHTML = data.items.map(itemHtml).join("");
     els.sumItems.textContent = count;
-    els.sumTotal.textContent = formatVND(data.total);
-    document.querySelector('#sum-subtotal').textContent = formatVND(data.subtotal);
-    document.querySelector('#sum-shipping').textContent = formatVND(data.shipping_fee);
+    const subtotal = Number(data.subtotal ?? data.total ?? 0);
+    const shipping = Number(data.shipping_fee ?? 0);
+    const payable = Number(data.payable_total ?? subtotal + shipping);
+    els.sumSubtotal.textContent = formatVND(subtotal);
+    els.sumShipping.textContent = formatVND(shipping);
+    els.sumTotal.textContent = formatVND(payable);
     els.btnOrder.disabled = !data.can_checkout;
     els.btnOrder.title = data.can_checkout
       ? ""
@@ -177,10 +188,12 @@
   async function load() {
     try {
       render((await api("GET")).data);
+      return true;
     } catch (e) {
-      if (e.status === 401) { Shop.login(); return; }
+      if (e.status === 401) { Shop.login(); return false; }
       els.loading.hidden = true;
       showAlert(e.message);
+      return false;
     }
   }
 
@@ -269,11 +282,27 @@
     const errors = {};
     if (values.receiver_name.length < 2)
       errors.receiver_name = "Vui lòng nhập họ tên.";
-    if (!PHONE_RE.test(values.phone.replace(/[\s.\-]/g, "")))
-      errors.phone = "Số điện thoại không hợp lệ (VD: 0912345678).";
+    if (!values.phone)
+      errors.phone = "Số điện thoại không hợp lệ (VD: 0912 345 678 hoặc +84 912 345 678).";
     if (values.address.length < 5)
       errors.address = "Vui lòng nhập địa chỉ nhận hàng.";
     return errors;
+  }
+
+  let profileApplied = false;
+  async function fillFromProfile() {
+    if (profileApplied || !window.Shop) return;
+    profileApplied = true;
+    try {
+      const { data } = await Shop.api("me.php");
+      const fields = els.form.elements;
+      if (!fields.receiver_name.value.trim()) fields.receiver_name.value = data.name || "";
+      if (!fields.phone.value.trim()) fields.phone.value = data.phone || "";
+      if (!fields.address.value.trim()) fields.address.value = data.address || "";
+    } catch (e) {
+      profileApplied = false;
+      if (e.status === 401) Shop.login();
+    }
   }
 
   let checkoutKey = crypto.randomUUID ? crypto.randomUUID() : Array.from(crypto.getRandomValues(new Uint8Array(16)), x => x.toString(16).padStart(2, "0")).join("");
@@ -286,7 +315,7 @@
     const fd = new FormData(els.form);
     const values = {
       receiver_name: String(fd.get("receiver_name")).trim(),
-      phone: String(fd.get("phone")).trim().replace(/[\s.\-()]/g, ""),
+      phone: window.Shop ? Shop.normalizePhone(fd.get("phone")) : "",
       address: String(fd.get("address")).trim(),
       note: String(fd.get("note")).trim(),
       checkout_key: checkoutKey,
@@ -305,9 +334,9 @@
       const res = await Shop.api("orders.php", {method: "POST", body: values});
       location.href = `${ORDERS_URL}?id=${res.data.order_id}&placed=1`;
     } catch (e) {
-      const p = e.payload?.data || e.payload || {};
-      if (p.errors)
-        Object.entries(p.errors).forEach(([k, v]) => setFieldError(k, v));
+      const p = e.payload || {};
+      const fieldErrors = p.errors || p.data?.errors || {};
+      Object.entries(fieldErrors).forEach(([k, v]) => setFieldError(k, v));
       const list = Array.isArray(p.items)
         ? p.items.map((i) => `${i.name}: cần ${i.requested}, còn ${i.stock}`)
         : [];
@@ -317,20 +346,10 @@
         els.alert.append(link);
       }
       busy = false;
-      els.btnOrder.textContent = "Đặt hàng";
+      els.btnOrder.textContent = "Đặt hàng — Thanh toán khi nhận hàng";
       await load();
     }
   });
 
-  async function prefillShipping() {
-    try {
-      const user = await Auth.currentUser();
-      if (user) for (const [field, key] of [['receiver_name','name'],['phone','phone'],['address','address']]) {
-        const input = els.form.elements[field];
-        if (!input.value) input.value = user[key] || '';
-      }
-    } catch { /* Cart API will report the actual authentication error. */ }
-  }
-  prefillShipping();
-  load();
+  load().then((ok) => { if (ok) fillFromProfile(); });
 })();
