@@ -1,7 +1,9 @@
+ > Chạy kịch bản tài khoản seed với AUTH_MODE=legacy. Mặc định dự án dùng Google Firebase; Email/Password chưa bật. Với Google, dùng tài khoản thật và quy trình cấp admin trong docs/TV5_FIREBASE.md. PHP chỉ chấp nhận ID token đã xác minh chữ ký; không đăng nhập bằng UID gửi trực tiếp.
+
 # Kịch Bản Trình Diễn (Demo Script) & Checklist Trước Buổi Báo Cáo
 
-Dự án: **BTA STORE (Nhóm 12) — Website Thương Mại Điện Tử Cửa Hàng Thiết Bị Công Nghệ**  
-Ngày cập nhật: **17/11/2026**  
+Dự án: **BTA STORE (Nhóm 12) — Website Thương Mại Điện Tử Cửa Hàng Thiết Bị Công Nghệ**
+Ngày cập nhật: **17/11/2026**
 Mục tiêu: Đạt điểm tối đa đồ án với luồng hoạt động mượt mà, dữ liệu chân thực và xử lý đầy đủ các ca biên nghiệp vụ.
 
 ---
@@ -13,11 +15,11 @@ Mục tiêu: Đạt điểm tối đa đồ án với luồng hoạt động mư
 - **Lệnh khởi động nhanh:** `run-demo.cmd` (truy cập `http://localhost:8000/`).
 
 ### Danh sách tài khoản demo
-| Vai trò | Email đăng nhập | Mật khẩu | Firebase UID (Mock/Live) | Quyền hạn |
+| Vai trò | Email đăng nhập | Mật khẩu | Firebase UID (seed) | Quyền hạn |
 | :--- | :--- | :--- | :--- | :--- |
-| **Admin** | `admin@ltweb.com` | `123456` | `firebase_demo_admin` | Toàn quyền Dashboard, Sản phẩm, Đơn hàng |
-| **Khách hàng 1** | `user1@ltweb.com` | `123456` | `firebase_demo_user1` | Đã có sẵn 3 đơn hàng ở các trạng thái |
-| **Khách hàng 2** | `user2@ltweb.com` | `123456` | `firebase_demo_user2` | Đã có 2 đơn hàng (1 hoàn thành, 1 đã hủy) |
+| **Admin** | `admin@ltweb.com` | `123456` | `NULL` | Toàn quyền Dashboard, Sản phẩm, Đơn hàng |
+| **Khách hàng 1** | `user1@ltweb.com` | `123456` | `NULL` | Đã có sẵn 3 đơn hàng ở các trạng thái |
+| **Khách hàng 2** | `user2@ltweb.com` | `123456` | `NULL` | Đã có 2 đơn hàng (1 hoàn thành, 1 đã hủy) |
 
 ---
 

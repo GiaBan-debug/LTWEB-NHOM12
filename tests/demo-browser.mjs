@@ -39,7 +39,7 @@ try {
   await page.locator('#category-list .category-tile').first().click();
   await page.locator('#product-list .product-tile').first().waitFor();
   await check(() => page.locator('#product-list .eyebrow').allTextContents().then(labels => labels.length >= 3 && labels.every(t => t === 'Điện thoại')),'Category filtering');
-  await page.locator('[name=search]').fill('iPhone');
+  await page.locator('[name=search]').fill('iPhone 15 Pro Max');
   await page.locator('#catalog-form button[type=submit], #catalog-form button:not([type])').click();
   await page.waitForFunction(() => document.querySelector('#product-count').textContent.startsWith('1 sản phẩm'));
   await check(() => page.locator('#product-list .product-tile').count().then(n => n === 1),'Search filters UI');

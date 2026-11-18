@@ -175,7 +175,14 @@
         );
         content.innerHTML =
           S.orderDetail(data) +
+          (data.status === 'pending' ? '<button class="button danger" id="cancel-order">Hủy đơn đang chờ</button> ' : '') +
           `<a class="button secondary" href="${S.page("order-history")}">← Tất cả đơn hàng</a>`;
+        document.querySelector('#cancel-order')?.addEventListener('click', async event => {
+          if (!confirm('Hủy đơn đang chờ xác nhận?')) return;
+          const button = event.currentTarget; button.disabled = true;
+          try { await S.api('orders.php', {method:'PUT', body:{id:Number(data.id),action:'cancel'}}); location.href = S.page('order-history', '?id=' + data.id); }
+          catch (error) { S.toast(error.message, true); button.disabled = false; }
+        });
       } else {
         const { data } = await S.api(
           "orders.php?page=" + (Number(params.get("page")) || 1),
@@ -202,6 +209,8 @@
       const form = document.querySelector("#profile-form");
       form.elements.name.value = data.name;
       form.elements.email.value = data.email;
+      form.elements.phone.value = data.phone || '';
+      form.elements.address.value = data.address || '';
       form.addEventListener("submit", async (ev) => {
         ev.preventDefault();
         const button = form.querySelector("button");
@@ -209,7 +218,7 @@
         try {
           await S.api("me.php", {
             method: "PUT",
-            body: { name: form.elements.name.value },
+            body: { name: form.elements.name.value, phone: form.elements.phone.value, address: form.elements.address.value },
           });
           await Auth.mountHeader();
           S.toast("Đã cập nhật thông tin.");

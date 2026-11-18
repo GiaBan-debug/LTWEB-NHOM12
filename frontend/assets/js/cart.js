@@ -166,6 +166,8 @@
     els.list.innerHTML = data.items.map(itemHtml).join("");
     els.sumItems.textContent = count;
     els.sumTotal.textContent = formatVND(data.total);
+    document.querySelector('#sum-subtotal').textContent = formatVND(data.subtotal);
+    document.querySelector('#sum-shipping').textContent = formatVND(data.shipping_fee);
     els.btnOrder.disabled = !data.can_checkout;
     els.btnOrder.title = data.can_checkout
       ? ""
@@ -303,18 +305,32 @@
       const res = await Shop.api("orders.php", {method: "POST", body: values});
       location.href = `${ORDERS_URL}?id=${res.data.order_id}&placed=1`;
     } catch (e) {
-      const p = e.payload || {};
+      const p = e.payload?.data || e.payload || {};
       if (p.errors)
         Object.entries(p.errors).forEach(([k, v]) => setFieldError(k, v));
       const list = Array.isArray(p.items)
         ? p.items.map((i) => `${i.name}: cần ${i.requested}, còn ${i.stock}`)
         : [];
       showAlert(e.message, { list });
+      if (p.code === 'EMAIL_NOT_VERIFIED') {
+        const link = document.createElement('a'); link.href = Shop.url('frontend/pages/verify-email.html'); link.textContent = ' Mở trang xác minh email';
+        els.alert.append(link);
+      }
       busy = false;
       els.btnOrder.textContent = "Đặt hàng";
       await load();
     }
   });
 
+  async function prefillShipping() {
+    try {
+      const user = await Auth.currentUser();
+      if (user) for (const [field, key] of [['receiver_name','name'],['phone','phone'],['address','address']]) {
+        const input = els.form.elements[field];
+        if (!input.value) input.value = user[key] || '';
+      }
+    } catch { /* Cart API will report the actual authentication error. */ }
+  }
+  prefillShipping();
   load();
 })();
