@@ -3,3 +3,7 @@
 node_modules/
 *.log
 dist/
+vendor/
+var/*
+!var/.htaccess
+*-service-account*.json

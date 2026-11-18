@@ -17,54 +17,69 @@
           Tạo tài khoản để mua hàng. Mật khẩu không lưu trên trình duyệt.
         </p>
         <div id="auth-status" class="auth-status" hidden></div>
-        <label class="auth-field"
-          >Họ và tên
-          <input
-            id="name"
-            name="name"
-            type="text"
-            autocomplete="name"
-            maxlength="100"
-            required
-          />
-          <small class="field-error" data-error-for="name"></small>
-        </label>
-        <label class="auth-field"
-          >Email
-          <input
-            id="email"
-            name="email"
-            type="email"
-            autocomplete="email"
-            required
-          />
-          <small class="field-error" data-error-for="email"></small>
-        </label>
-        <label class="auth-field"
-          >Mật khẩu
-          <input
-            id="password"
-            name="password"
-            type="password"
-            autocomplete="new-password"
-            minlength="6"
-            required
-          />
-          <small class="field-error" data-error-for="password"></small>
-        </label>
-        <label class="auth-field"
-          >Xác nhận mật khẩu
-          <input
-            id="password2"
-            name="password2"
-            type="password"
-            autocomplete="new-password"
-            minlength="6"
-            required
-          />
-          <small class="field-error" data-error-for="password2"></small>
-        </label>
-        <button id="btn-submit" class="btn-auth" type="submit">Đăng ký</button>
+        <button
+          id="btn-google"
+          class="button secondary"
+          type="button"
+          style="width: 100%; margin-bottom: 20px"
+        >
+          Tiếp tục bằng Google
+        </button>
+        <fieldset
+          id="email-password-fields"
+          style="border: 0; margin: 0; padding: 0"
+        >
+          <label class="auth-field"
+            >Họ và tên
+            <input
+              id="name"
+              name="name"
+              type="text"
+              autocomplete="name"
+              maxlength="100"
+              required
+            />
+            <small class="field-error" data-error-for="name"></small>
+          </label>
+          <label class="auth-field"
+            >Email
+            <input
+              id="email"
+              name="email"
+              type="email"
+              autocomplete="email"
+              required
+            />
+            <small class="field-error" data-error-for="email"></small>
+          </label>
+          <label class="auth-field"
+            >Mật khẩu
+            <input
+              id="password"
+              name="password"
+              type="password"
+              autocomplete="new-password"
+              minlength="6"
+              required
+            />
+            <small class="field-error" data-error-for="password"></small>
+          </label>
+          <label class="auth-field"
+            >Xác nhận mật khẩu
+            <input
+              id="password2"
+              name="password2"
+              type="password"
+              autocomplete="new-password"
+              minlength="6"
+              required
+            />
+            <small class="field-error" data-error-for="password2"></small>
+          </label>
+          <button id="btn-submit" class="btn-auth" type="submit">
+            Đăng ký
+          </button>
+        </fieldset>
         <p class="auth-alt">
           Đã có tài khoản? <a href="login.html">Đăng nhập</a>
         </p>
@@ -79,7 +94,24 @@
         const form = document.getElementById("register-form");
         const statusEl = document.getElementById("auth-status");
         const btn = document.getElementById("btn-submit");
-        const user = await Auth.currentUser();
+        const googleButton = document.querySelector("#btn-google");
+        googleButton.addEventListener("click", async () => {
+          googleButton.disabled = true;
+          try {
+            await Auth.googleLogin();
+            location.href = Auth.homeHref;
+          } catch (error) {
+            Auth.setStatus(statusEl, error.message, "error");
+            googleButton.disabled = false;
+          }
+        });
+        Auth.setupAuthPage(googleButton, statusEl);
+        let user;
+        try {
+          user = await Auth.currentUser();
+        } catch (error) {
+          Auth.setStatus(statusEl, error.message, "error");
+        }
         if (user) {
           location.replace(Auth.homeHref);
           return;
@@ -125,7 +157,16 @@
           btn.disabled = true;
           btn.textContent = "Đang đăng ký…";
           try {
-            await Auth.register({ name, email, password });
+            const result = await Auth.register({ name, email, password });
+            const configuration = await Auth.config();
+            sessionStorage.setItem(
+              "auth_registration_notice",
+              configuration.mode === "firebase"
+                ? result.emailSent
+                  ? "Đã tạo tài khoản. Hãy kiểm tra email (kể cả thư rác) để xác minh, sau đó đăng nhập."
+                  : "Đã tạo tài khoản. Đăng nhập và chọn Xác minh email để gửi lại thư."
+                : "Đăng ký thành công. Bạn có thể đăng nhập.",
+            );
             Auth.setStatus(
               statusEl,
               "Đăng ký thành công. Đang chuyển sang đăng nhập…",

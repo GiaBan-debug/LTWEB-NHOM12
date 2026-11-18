@@ -5,17 +5,18 @@
 -- Bảng người dùng
 -- ----------------------------
 CREATE TABLE IF NOT EXISTS users (
-    id           INT UNSIGNED     AUTO_INCREMENT PRIMARY KEY,
-    name         VARCHAR(100)     NOT NULL,
-    email        VARCHAR(150)     NOT NULL UNIQUE,
-    firebase_uid VARCHAR(128)     NULL UNIQUE,
-    password     VARCHAR(255)     NULL,
-    role         ENUM('user','admin') NOT NULL DEFAULT 'user',
-    phone        VARCHAR(20)      NULL,
-    address      TEXT             NULL,
-    avatar       VARCHAR(255)     NULL,
-    created_at   TIMESTAMP        NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at   TIMESTAMP        NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    id         INT UNSIGNED     AUTO_INCREMENT PRIMARY KEY,
+    name       VARCHAR(100)     NOT NULL,
+    email      VARCHAR(150)     NOT NULL UNIQUE,
+    password   VARCHAR(255)     NULL,
+    firebase_uid VARCHAR(128) COLLATE utf8mb4_bin NULL UNIQUE,
+    email_verified TINYINT(1) NOT NULL DEFAULT 0,
+    phone      VARCHAR(15) NOT NULL DEFAULT '',
+    address    VARCHAR(255) NOT NULL DEFAULT '',
+    role       ENUM('user','admin') NOT NULL DEFAULT 'user',
+    avatar     VARCHAR(255)     NULL,
+    created_at TIMESTAMP        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP        NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ----------------------------
@@ -103,22 +104,22 @@ CREATE TABLE IF NOT EXISTS cart_items (
 -- Bảng đơn hàng
 -- ----------------------------
 CREATE TABLE IF NOT EXISTS orders (
-    id                 INT UNSIGNED  AUTO_INCREMENT PRIMARY KEY,
-    user_id            INT UNSIGNED  NOT NULL,
-    total_price        DECIMAL(15,2) NOT NULL DEFAULT 0,
-    shipping_fee       DECIMAL(15,2) NOT NULL DEFAULT 0,
-    receiver_name      VARCHAR(100)  NOT NULL DEFAULT '',
-    phone              VARCHAR(15)   NOT NULL DEFAULT '',
-    address            TEXT          NULL,
-    note               TEXT          NULL,
-    carrier            VARCHAR(100)  NULL,
-    tracking_code      VARCHAR(100)  NULL,
-    estimated_delivery DATE          NULL,
-    checkout_key       VARCHAR(64)   NULL,
-    status             ENUM('pending','processing','shipped','completed','cancelled')
-                                     NOT NULL DEFAULT 'pending',
-    created_at         TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at         TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    id          INT UNSIGNED  AUTO_INCREMENT PRIMARY KEY,
+    user_id     INT UNSIGNED  NOT NULL,
+    total_price DECIMAL(15,2) NOT NULL DEFAULT 0,
+    shipping_fee DECIMAL(15,2) NOT NULL DEFAULT 0,
+    carrier VARCHAR(100) NULL,
+    tracking_code VARCHAR(100) NULL,
+    estimated_delivery DATE NULL,
+    receiver_name VARCHAR(100) NOT NULL DEFAULT '',
+    phone       VARCHAR(15) NOT NULL DEFAULT '',
+    checkout_key VARCHAR(64) NULL,
+    status      ENUM('pending','processing','shipped','completed','cancelled')
+                              NOT NULL DEFAULT 'pending',
+    address     TEXT          NULL,
+    note        TEXT          NULL,
+    created_at  TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at  TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT fk_order_user
         FOREIGN KEY (user_id) REFERENCES users(id)
         ON DELETE RESTRICT ON UPDATE CASCADE,

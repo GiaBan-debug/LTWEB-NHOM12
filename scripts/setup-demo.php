@@ -10,7 +10,9 @@ $db->exec("CREATE DATABASE IF NOT EXISTS `$name` CHARACTER SET utf8mb4 COLLATE u
 $db->exec("USE `$name`");
 $tables = $db->query('SHOW TABLES')->fetchAll();
 if ($tables) {
-    echo "Demo database already exists; no data was changed.\n";
+    require_once __DIR__ . '/migrate-tv5.php';
+    migrateTv5Database($db);
+    echo "Demo database preserved; missing schema columns migrated.\n";
     exit;
 }
 $db->exec(file_get_contents(__DIR__ . '/../database/schema.sql'));

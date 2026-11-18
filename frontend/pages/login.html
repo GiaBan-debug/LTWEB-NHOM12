@@ -15,33 +15,49 @@
         <h1>Đăng nhập</h1>
         <p class="auth-lead">Dùng email và mật khẩu đã đăng ký.</p>
         <div id="auth-status" class="auth-status" hidden></div>
-        <label class="auth-field"
-          >Email
-          <input
-            id="email"
-            name="email"
-            type="email"
-            autocomplete="email"
-            required
-          />
-          <small class="field-error" data-error-for="email"></small>
-        </label>
-        <label class="auth-field"
-          >Mật khẩu
-          <input
-            id="password"
-            name="password"
-            type="password"
-            autocomplete="current-password"
-            required
-          />
-          <small class="field-error" data-error-for="password"></small>
-        </label>
-        <button id="btn-submit" class="btn-auth" type="submit">
-          Đăng nhập
+        <button
+          id="btn-google"
+          class="button secondary"
+          type="button"
+          style="width: 100%; margin-bottom: 20px"
+        >
+          Đăng nhập bằng Google
         </button>
+        <fieldset
+          id="email-password-fields"
+          style="border: 0; margin: 0; padding: 0"
+        >
+          <label class="auth-field"
+            >Email
+            <input
+              id="email"
+              name="email"
+              type="email"
+              autocomplete="email"
+              required
+            />
+            <small class="field-error" data-error-for="email"></small>
+          </label>
+          <label class="auth-field"
+            >Mật khẩu
+            <input
+              id="password"
+              name="password"
+              type="password"
+              autocomplete="current-password"
+              required
+            />
+            <small class="field-error" data-error-for="password"></small>
+          </label>
+          <button id="btn-submit" class="btn-auth" type="submit">
+            Đăng nhập
+          </button>
+        </fieldset>
         <p class="auth-alt">
           Chưa có tài khoản? <a href="register.html">Đăng ký</a>
+        </p>
+        <p class="auth-alt" id="forgot-password-link">
+          <a href="forgot-password.html">Quên mật khẩu?</a>
         </p>
       </form>
     </main>
@@ -55,7 +71,29 @@
         const statusEl = document.getElementById("auth-status");
         const btn = document.getElementById("btn-submit");
         const params = new URLSearchParams(location.search);
-        const user = await Auth.currentUser();
+        const googleButton = document.querySelector("#btn-google");
+        googleButton.addEventListener("click", async () => {
+          googleButton.disabled = true;
+          try {
+            await Auth.googleLogin();
+            location.href = Auth.safeRedirect(params.get("redirect"));
+          } catch (error) {
+            Auth.setStatus(statusEl, error.message, "error");
+            googleButton.disabled = false;
+          }
+        });
+        Auth.setupAuthPage(googleButton, statusEl);
+        let user;
+        try {
+          user = await Auth.currentUser();
+        } catch (error) {
+          Auth.setStatus(statusEl, error.message, "error");
+        }
+        const notice = sessionStorage.getItem("auth_registration_notice");
+        if (notice) {
+          Auth.setStatus(statusEl, notice, "ok");
+          sessionStorage.removeItem("auth_registration_notice");
+        }
         if (user) {
           location.replace(
             Auth.safeRedirect(params.get("redirect")) || Auth.homeHref,
