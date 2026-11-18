@@ -19,9 +19,9 @@ ON DUPLICATE KEY UPDATE name = VALUES(name), description = VALUES(description);
 -- Hash: $2y$12$yXbNYDlLOK4Dw.GdJVT3ae5Er3UiacD9UYgw6X74XJ9/V7eYFU1iC
 -- ----------------------------
 INSERT INTO users (id, name, email, firebase_uid, password, role, phone, address) VALUES
-(1, 'Admin',        'admin@ltweb.com', 'firebase_demo_admin', '$2y$12$yXbNYDlLOK4Dw.GdJVT3ae5Er3UiacD9UYgw6X74XJ9/V7eYFU1iC', 'admin', '0901234567', 'Ban Quản Trị BTA Store, Quận 1, TP.HCM'),
-(2, 'Nguyễn Văn A', 'user1@ltweb.com', 'firebase_demo_user1', '$2y$12$yXbNYDlLOK4Dw.GdJVT3ae5Er3UiacD9UYgw6X74XJ9/V7eYFU1iC', 'user',  '0912345678', '123 Lê Lợi, P. Bến Nghé, Quận 1, TP.HCM'),
-(3, 'Trần Thị B',   'user2@ltweb.com', 'firebase_demo_user2', '$2y$12$yXbNYDlLOK4Dw.GdJVT3ae5Er3UiacD9UYgw6X74XJ9/V7eYFU1iC', 'user',  '0987654321', '456 Nguyễn Huệ, P. Bến Nghé, Quận 1, TP.HCM')
+(1, 'Admin',        'admin@ltweb.com', NULL, '$2y$12$yXbNYDlLOK4Dw.GdJVT3ae5Er3UiacD9UYgw6X74XJ9/V7eYFU1iC', 'admin', '0901234567', 'Ban Quản Trị BTA Store, Quận 1, TP.HCM'),
+(2, 'Nguyễn Văn A', 'user1@ltweb.com', NULL, '$2y$12$yXbNYDlLOK4Dw.GdJVT3ae5Er3UiacD9UYgw6X74XJ9/V7eYFU1iC', 'user',  '0912345678', '123 Lê Lợi, P. Bến Nghé, Quận 1, TP.HCM'),
+(3, 'Trần Thị B',   'user2@ltweb.com', NULL, '$2y$12$yXbNYDlLOK4Dw.GdJVT3ae5Er3UiacD9UYgw6X74XJ9/V7eYFU1iC', 'user',  '0987654321', '456 Nguyễn Huệ, P. Bến Nghé, Quận 1, TP.HCM')
 ON DUPLICATE KEY UPDATE name = VALUES(name), role = VALUES(role), phone = VALUES(phone), address = VALUES(address);
 
 -- ----------------------------

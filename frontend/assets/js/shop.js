@@ -29,7 +29,7 @@
   }
 
   /* ---- API transport ---- */
-  async function api(file, { method = "GET", body } = {}) {
+  async function api(file, { method = "GET", body, restoreSession = true } = {}) {
     const headers = { Accept: "application/json" };
     if (method !== "GET") headers["X-CSRF-Token"] = await csrf();
     if (body !== undefined) headers["Content-Type"] = "application/json";
@@ -42,6 +42,10 @@
       throw new Error("Máy chủ không trả JSON hợp lệ. Kiểm tra cấu hình PHP.");
     }
     if (!response.ok || !result.success) {
+      if (response.status === 401 && restoreSession && window.Auth && !/^(me|firebase-session|login|logout|register|csrf|auth-config)\.php/.test(file)) {
+        const user = await Auth.currentUser();
+        if (user) return api(file, {method, body, restoreSession:false});
+      }
       if (response.status === 403) csrfPromise = null;
       const error = new Error(result.message || "Yêu cầu thất bại.");
       error.status = response.status;
@@ -116,9 +120,8 @@
   /* ---- Login redirect ---- */
   function login() {
     const current = location.pathname.split("/").pop();
-    const redirect = location.pathname.includes("/users/")
-      ? "users/" + current + location.search
-      : current + location.search;
+    const folder = location.pathname.includes('/users/') ? 'users/' : location.pathname.includes('/admin/') ? 'admin/' : '';
+    const redirect = folder + current + location.search;
     location.href = url("frontend/pages/login.html?redirect=" + encodeURIComponent(redirect));
   }
 

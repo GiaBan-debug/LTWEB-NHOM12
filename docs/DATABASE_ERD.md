@@ -1,6 +1,6 @@
 # Sơ đồ thực thể quan hệ (ERD) & Tài liệu Cơ sở Dữ liệu
 
-Dự án: **BTA STORE (Nhóm 12) — Website Thương Mại Điện Tử Cửa Hàng Thiết Bị Công Nghệ**  
+Dự án: **BTA STORE (Nhóm 12) — Website Thương Mại Điện Tử Cửa Hàng Thiết Bị Công Nghệ**
 Cập nhật: **17/11/2026** (Phiên bản đồng bộ TV6: Firebase UID, Profile, Vận chuyển, Specs/Warranty)
 
 ---
@@ -137,7 +137,7 @@ erDiagram
 
 ### 2.1. Bảng `users`
 - **Mục đích:** Quản lý tài khoản, danh tính, thông tin liên hệ và phân quyền.
-- **Tích hợp Firebase Auth:** Cột `firebase_uid` có ràng buộc `UNIQUE`, lưu UID do Firebase Authentication cấp. 
+- **Tích hợp Firebase Auth:** Cột `firebase_uid` có ràng buộc `UNIQUE`, lưu UID do Firebase Authentication cấp.
 - **Cột `password`:** Cho phép `NULL` khi người dùng đăng ký qua Firebase. Với tài khoản truyền thống/kiểm thử local, mật khẩu được mã hóa bằng thuật toán `bcrypt` (`password_hash`).
 - **Khóa chính nội bộ `users.id`:** Luôn được giữ nguyên làm khóa ngoại cho các bảng `carts`, `orders`, `posts`. Không dùng trực tiếp UID của dịch vụ thứ ba làm khóa ngoại hệ thống, đảm bảo tính độc lập và toàn vẹn dữ liệu.
 

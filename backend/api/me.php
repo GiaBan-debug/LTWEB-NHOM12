@@ -4,6 +4,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/../includes/bootstrap.php';
+require_once __DIR__ . '/../includes/checkout.php';
 
 applyApiCors(['GET', 'PUT', 'OPTIONS']);
 
@@ -31,22 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
     if ($address !== '' && mb_strlen($address) < 5) $errors['address'] = 'Địa chỉ nhận hàng cần ít nhất 5 ký tự.';
     if ($errors) jsonResponse(false, ['errors' => $errors], 'Hãy kiểm tra thông tin hồ sơ.', 422);
     getDB()->prepare('UPDATE users SET name = ?, phone = ?, address = ? WHERE id = ?')->execute([$name, $phone, $address, $user['id']]);
-    $_SESSION['user']['name'] = $user['name'] = $name;
-    $_SESSION['user']['phone'] = $user['phone'] = $phone;
-    $_SESSION['user']['address'] = $user['address'] = $address;
+    $user = getCurrentUser();
 }
 
-// Lấy thông tin mới nhất từ database
-$stmt = getDB()->prepare('SELECT id, name, email, role, phone, address, firebase_uid FROM users WHERE id = ?');
-$stmt->execute([$user['id']]);
-$fresh = $stmt->fetch() ?: $user;
-
-jsonResponse(true, [
-    'id'           => $fresh['id'] ?? null,
-    'name'         => $fresh['name'] ?? '',
-    'email'        => $fresh['email'] ?? '',
-    'role'         => $fresh['role'] ?? 'user',
-    'phone'        => $fresh['phone'] ?? '',
-    'address'      => $fresh['address'] ?? '',
-    'firebase_uid' => $fresh['firebase_uid'] ?? null,
-], 'OK');
+jsonResponse(true, publicUser($user), 'OK');

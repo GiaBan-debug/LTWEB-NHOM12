@@ -2,6 +2,7 @@ param([int]$Port = 8000, [int]$DatabasePort = 3307, [string]$PhpPath = 'C:/xampp
 $ErrorActionPreference = 'Stop'
 $projectRoot = Split-Path $PSScriptRoot -Parent
 Set-Location $projectRoot
+if (!(Test-Path (Join-Path $projectRoot 'vendor/autoload.php'))) { throw 'Chay scripts/install-dependencies.ps1 truoc de cai thu vien Firebase JWT.' }
 $mariaDirectory = Join-Path $projectRoot '.local-test/mariadb-11.4.5-winx64'
 if (!(Test-Path "$mariaDirectory/bin/mariadbd.exe")) { throw 'Chay scripts/setup-local.ps1 truoc de tai MariaDB portable.' }
 if (!(Test-Path "$projectRoot/.local-test/mysql-data/my.ini")) {

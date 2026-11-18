@@ -7,6 +7,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/../includes/bootstrap.php';
 
 applyApiCors(['POST', 'OPTIONS']);
+if (authMode() !== 'legacy') throw new ApiException('Hãy đăng nhập bằng Firebase trên giao diện website.', 410);
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
@@ -24,29 +25,17 @@ if (!filter_var($email, FILTER_VALIDATE_EMAIL) || $password === '') {
 }
 
 $db   = getDB();
-$stmt = $db->prepare("SELECT id, name, email, password, role FROM users WHERE email = ?");
+$stmt = $db->prepare("SELECT * FROM users WHERE email = ? AND firebase_uid IS NULL");
 $stmt->execute([$email]);
 $user = $stmt->fetch();
 
 // Dùng password_verify để so sánh — không để lộ lý do sai cụ thể
-if (!$user || !password_verify($password, $user['password'])) {
+if (!$user || !$user['password'] || !password_verify($password, $user['password'])) {
     jsonResponse(false, null, 'Email hoặc mật khẩu không đúng', 401);
 }
 
 // Đổi session ID sau khi đăng nhập để tránh session fixation
-session_regenerate_id(true);
+establishSession($user, 'legacy');
 
 // Lưu vào session — KHÔNG lưu hash password
-$_SESSION['user'] = [
-    'id'    => $user['id'],
-    'name'  => $user['name'],
-    'email' => $user['email'],
-    'role'  => $user['role'],
-];
-
-jsonResponse(true, [
-    'id'    => $user['id'],
-    'name'  => $user['name'],
-    'email' => $user['email'],
-    'role'  => $user['role'],
-], 'Đăng nhập thành công');
+jsonResponse(true, publicUser($user), 'Đăng nhập thành công');

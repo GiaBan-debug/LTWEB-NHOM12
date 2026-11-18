@@ -179,25 +179,13 @@
             : "";
         content.innerHTML =
           S.orderDetail(data) +
-          cancel +
+          (data.status === 'pending' ? '<button class="button danger" id="cancel-order">Hủy đơn đang chờ</button> ' : '') +
           `<a class="button secondary" href="${S.page("order-history")}">← Tất cả đơn hàng</a>`;
-        document.querySelector("#cancel-order")?.addEventListener("submit", async (ev) => {
-          ev.preventDefault();
-          if (!confirm("Hủy đơn này? Tồn kho sẽ được hoàn lại.")) return;
-          const button = ev.currentTarget.querySelector("button");
-          button.disabled = true;
-          button.textContent = "Đang hủy đơn…";
-          try {
-            await S.api("orders.php?id=" + encodeURIComponent(params.get("id")), {
-              method: "PUT",
-              body: { status: "cancelled" },
-            });
-            location.reload();
-          } catch (err) {
-            button.disabled = false;
-            button.textContent = "Yêu cầu hủy đơn";
-            S.toast(err.message, true);
-          }
+        document.querySelector('#cancel-order')?.addEventListener('click', async event => {
+          if (!confirm('Hủy đơn đang chờ xác nhận?')) return;
+          const button = event.currentTarget; button.disabled = true;
+          try { await S.api('orders.php', {method:'PUT', body:{id:Number(data.id),action:'cancel'}}); location.href = S.page('order-history', '?id=' + data.id); }
+          catch (error) { S.toast(error.message, true); button.disabled = false; }
         });
       } else {
         const { data } = await S.api(
