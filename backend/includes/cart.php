@@ -14,5 +14,15 @@ function fetchCart(PDO $db, int $userId): array
         $count += $row['quantity'];
         $items[] = $row;
     }
-    return ['items' => $items, 'total' => $total, 'total_items' => $count, 'is_empty' => !$items, 'can_checkout' => (bool) ($items && !in_array(false, array_column($items, 'available'), true))];
+    $shipping = shippingFee($total);
+    return [
+        'items' => $items,
+        'subtotal' => $total,
+        'shipping_fee' => $shipping,
+        'payable_total' => $total + $shipping,
+        'total' => $total,
+        'total_items' => $count,
+        'is_empty' => !$items,
+        'can_checkout' => (bool) ($items && !in_array(false, array_column($items, 'available'), true)),
+    ];
 }

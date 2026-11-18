@@ -110,7 +110,8 @@
 .field__error {
   color: #b13528;
 }
-.field--invalid input {
+.field--invalid input,
+.field--invalid textarea {
   border-color: #b13528;
 }
 .alert {

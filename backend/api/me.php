@@ -19,8 +19,17 @@ if (!$user) {
 if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
     $input = getJsonBody();
     $name = inputString($input, 'name', 100, true);
-    $phone = inputString($input, 'phone', 20);
+    $rawPhone = inputString($input, 'phone', 25);
     $address = inputString($input, 'address', 255);
+    $errors = [];
+    if (mb_strlen($name) < 2) $errors['name'] = 'Vui lòng nhập họ tên.';
+    $phone = '';
+    if ($rawPhone !== '') {
+        $phone = normalizePhone($rawPhone) ?? '';
+        if ($phone === '') $errors['phone'] = 'Số điện thoại không hợp lệ (VD: 0912345678 hoặc +84 912 345 678).';
+    }
+    if ($address !== '' && mb_strlen($address) < 5) $errors['address'] = 'Địa chỉ nhận hàng cần ít nhất 5 ký tự.';
+    if ($errors) jsonResponse(false, ['errors' => $errors], 'Hãy kiểm tra thông tin hồ sơ.', 422);
     getDB()->prepare('UPDATE users SET name = ?, phone = ?, address = ? WHERE id = ?')->execute([$name, $phone, $address, $user['id']]);
     $_SESSION['user']['name'] = $user['name'] = $name;
     $_SESSION['user']['phone'] = $user['phone'] = $phone;
