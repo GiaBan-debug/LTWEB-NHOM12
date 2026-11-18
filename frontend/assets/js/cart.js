@@ -341,6 +341,10 @@
         ? p.items.map((i) => `${i.name}: cần ${i.requested}, còn ${i.stock}`)
         : [];
       showAlert(e.message, { list });
+      if (p.code === 'EMAIL_NOT_VERIFIED') {
+        const link = document.createElement('a'); link.href = Shop.url('frontend/pages/verify-email.html'); link.textContent = ' Mở trang xác minh email';
+        els.alert.append(link);
+      }
       busy = false;
       els.btnOrder.textContent = "Đặt hàng — Thanh toán khi nhận hàng";
       await load();

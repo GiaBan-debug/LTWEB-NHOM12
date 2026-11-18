@@ -1,5 +1,6 @@
 <?php
 declare(strict_types=1);
+require_once __DIR__ . '/checkout.php';
 function fetchCart(PDO $db, int $userId): array
 {
     $stmt = $db->prepare('SELECT p.id AS product_id, p.name, p.thumbnail AS image, p.price, p.stock, p.status, ci.quantity FROM cart_items ci JOIN carts c ON c.id = ci.cart_id JOIN products p ON p.id = ci.product_id WHERE c.user_id = ? ORDER BY ci.id DESC');
@@ -14,15 +15,5 @@ function fetchCart(PDO $db, int $userId): array
         $count += $row['quantity'];
         $items[] = $row;
     }
-    $shipping = shippingFee($total);
-    return [
-        'items' => $items,
-        'subtotal' => $total,
-        'shipping_fee' => $shipping,
-        'payable_total' => $total + $shipping,
-        'total' => $total,
-        'total_items' => $count,
-        'is_empty' => !$items,
-        'can_checkout' => (bool) ($items && !in_array(false, array_column($items, 'available'), true)),
-    ];
+    return ['items' => $items, 'total_items' => $count, 'is_empty' => !$items, 'can_checkout' => (bool) ($items && !in_array(false, array_column($items, 'available'), true))] + orderAmounts($total);
 }

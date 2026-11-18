@@ -7,6 +7,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/../includes/bootstrap.php';
 
 applyApiCors(['POST', 'OPTIONS']);
+if (authMode() !== 'legacy') throw new ApiException('Hãy đăng ký bằng Firebase trên giao diện website.', 410);
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);

@@ -31,6 +31,6 @@ ALTER TABLE products
   ADD COLUMN specs TEXT NULL AFTER warranty_months;
 
 -- 4. Cập nhật mock firebase_uid cho các tài khoản demo có sẵn
-UPDATE users SET firebase_uid = 'firebase_demo_admin', phone = '0901234567', address = 'Quận 1, TP. Hồ Chí Minh' WHERE email = 'admin@ltweb.com';
-UPDATE users SET firebase_uid = 'firebase_demo_user1', phone = '0912345678', address = '123 Lê Lợi, P. Bến Nghé, Quận 1, TP. Hồ Chí Minh' WHERE email = 'user1@ltweb.com';
-UPDATE users SET firebase_uid = 'firebase_demo_user2', phone = '0987654321', address = '456 Nguyễn Huệ, P. Bến Nghé, Quận 1, TP. Hồ Chí Minh' WHERE email = 'user2@ltweb.com';
+UPDATE users SET phone = '0901234567', address = 'Quận 1, TP. Hồ Chí Minh' WHERE email = 'admin@ltweb.com';
+UPDATE users SET phone = '0912345678', address = '123 Lê Lợi, P. Bến Nghé, Quận 1, TP. Hồ Chí Minh' WHERE email = 'user1@ltweb.com';
+UPDATE users SET phone = '0987654321', address = '456 Nguyễn Huệ, P. Bến Nghé, Quận 1, TP. Hồ Chí Minh' WHERE email = 'user2@ltweb.com';
