@@ -40,8 +40,12 @@
               <dd id="sum-items">0</dd>
             </div>
             <div>
-              <dt>Giao hàng (demo)</dt>
-              <dd>0 ₫</dd>
+              <dt>Tạm tính</dt>
+              <dd id="sum-subtotal">0 ₫</dd>
+            </div>
+            <div>
+              <dt>Phí giao hàng</dt>
+              <dd id="sum-shipping">0 ₫</dd>
             </div>
             <div class="summary__total">
               <dt>Tổng thanh toán</dt>
@@ -64,8 +68,9 @@
                 name="phone"
                 type="tel"
                 autocomplete="tel"
-                maxlength="15"
-                required /><small
+                maxlength="25"
+                required
+                placeholder="0912 345 678" /><small
                 class="field__error"
                 data-error-for="phone"
               ></small></label
@@ -83,7 +88,9 @@
               ><small class="field__error" data-error-for="note"></small
             ></label>
             <p class="subtle">
-              Thanh toán khi nhận hàng (COD) · Giao hàng toàn quốc · Không cần thẻ ngân hàng.
+              Thanh toán khi nhận hàng (COD). Phí giao hàng do máy chủ tính:
+              miễn phí từ 2.000.000 ₫, đơn thấp hơn là 30.000 ₫. Thông tin ở đây
+              chỉ dùng cho đơn này.
             </p>
             <button id="btn-order" class="button" type="submit">
               Đặt hàng — Thanh toán khi nhận hàng
