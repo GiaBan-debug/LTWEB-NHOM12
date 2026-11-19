@@ -14,9 +14,3 @@ function orderAmounts(int $subtotal): array
     $shipping = $subtotal <= 0 || $subtotal >= $policy['free_from'] ? 0 : $policy['base_fee'];
     return ['subtotal' => $subtotal, 'shipping_fee' => $shipping, 'total' => $subtotal + $shipping];
 }
-function normalizePhone(string $phone): string
-{
-    $phone = preg_replace('/[\s.\-()]+/u', '', trim($phone));
-    if (!preg_match('/^(0|\+84)[0-9]{9}$/D', $phone)) throw new ApiException('Số điện thoại không hợp lệ.', 422, ['errors' => ['phone' => 'Nhập số Việt Nam, ví dụ 0912345678 hoặc +84912345678.']]);
-    return str_starts_with($phone, '+84') ? '0' . substr($phone, 3) : $phone;
-}
