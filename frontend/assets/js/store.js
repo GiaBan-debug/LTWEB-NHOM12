@@ -46,8 +46,36 @@
       )
         .map((c) => `<option value="${c.id}">${e(c.name)}</option>`)
         .join("");
-      for (const key of ["search", "category_id", "min_price", "max_price"])
-        form.elements[key].value = params.get(key) || "";
+      // Định dạng giá có dấu chấm phân cách hàng nghìn
+function formatPrice(value) {
+    const digits = String(value || "").replace(/\D/g, "");
+    return digits ? Number(digits).toLocaleString("vi-VN") : "";
+}
+
+// Chuyển giá có dấu chấm về số thuần
+function parsePrice(value) {
+    return String(value || "").replace(/\D/g, "");
+}
+
+// Khôi phục bộ lọc từ URL
+for (const key of ["search", "category_id", "min_price", "max_price"]) {
+    const value = params.get(key) || "";
+
+    form.elements[key].value =
+        key === "min_price" || key === "max_price"
+            ? formatPrice(value)
+            : value;
+}
+
+// Tự thêm dấu chấm khi người dùng nhập giá
+for (const key of ["min_price", "max_price"]) {
+    const input = form.elements[key];
+
+    input.addEventListener("input", () => {
+        const rawValue = parsePrice(input.value);
+        input.value = formatPrice(rawValue);
+    });
+}
       sort.value = params.get("sort") || "newest";
       if (!sort.value) sort.value = "newest";
       async function load(page = 1) {
@@ -55,7 +83,13 @@
         list.innerHTML =
           '<div class="skeleton" role="status">Đang tải sản phẩm…</div>';
         document.querySelector("#pagination").innerHTML = "";
-        const query = new URLSearchParams(new FormData(form));
+        const formData = new FormData(form);
+
+// Loại bỏ dấu chấm khỏi giá trước khi gửi API và tạo URL
+formData.set("min_price", parsePrice(formData.get("min_price")));
+formData.set("max_price", parsePrice(formData.get("max_price")));
+
+const query = new URLSearchParams(formData);
         query.set("page", page);
         query.set("limit", 9);
         query.set(
@@ -126,31 +160,191 @@
       if (bc) bc.textContent = p.name;
       const root = document.querySelector("#product-detail");
       root.className = "detail-layout";
-      const inStock = p.stock > 0;
-      root.innerHTML = `
+      const inStock = Number(p.stock) > 0;
+
+      // Lấy danh sách ảnh từ database
+      const productImages = (Array.isArray(p.images) ? p.images : [])
+      .map((item) => typeof item === "string" ? item : item?.image_path)
+      .filter(Boolean);
+
+      // Thêm ảnh đại diện nếu chưa có
+      if (p.thumbnail && !productImages.includes(p.thumbnail)) {
+        productImages.unshift(p.thumbnail);
+      }
+
+      // Đọc thông số kỹ thuật
+      let specifications = p.specs || {};
+
+if (typeof specifications === "string") {
+  try {
+    specifications = JSON.parse(specifications);
+  } catch {
+    specifications = specifications
+      .split(";")
+      .map((item) => item.trim())
+      .filter(Boolean)
+      .map((item, index) => ({
+        label: "Thông số " + (index + 1),
+        value: item
+      }));
+  }
+}
+
+if (Array.isArray(specifications)) {
+  specifications = specifications.map((item, index) => {
+    if (typeof item === "string") {
+      return ["Thông số " + (index + 1), item];
+    }
+
+    return [
+      item.label || item.name || ("Thông số " + (index + 1)),
+      item.value ?? ""
+    ];
+  });
+} else if (specifications && typeof specifications === "object") {
+  specifications = Object.entries(specifications);
+} else {
+  specifications = [];
+}
+
+const specEntries = specifications.filter(
+  ([, value]) => value !== null && value !== ""
+);
+
+const warrantyMonths = Number(p.warranty_months);
+
+// Hiển thị giao diện chi tiết sản phẩm
+root.innerHTML = `
 <div class="detail-photo">
-  <img src="${S.image(p.thumbnail)}" alt="${e(p.name)}">
+
+  <div class="detail-gallery-main">
+    <img
+      id="detail-main-image"
+      src="${S.image(productImages[0] || p.thumbnail)}"
+      alt="${e(p.name)}"
+    >
+  </div>
+
+  ${
+    productImages.length > 1
+      ? `
+      <div class="detail-gallery-thumbs">
+        ${productImages.map((src, index) => `
+          <button
+            type="button"
+            class="detail-thumb${index === 0 ? " is-active" : ""}"
+            data-gallery-index="${index}"
+          >
+            <img
+              src="${S.image(src)}"
+              alt="${e(p.name)} - ảnh ${index + 1}"
+            >
+          </button>
+        `).join("")}
+      </div>
+      `
+      : ""
+  }
+
 </div>
+
 <div class="detail-info">
-  <span class="eyebrow">${e(p.category_name)}</span>
+  <span class="eyebrow">${e(p.category_name || "Sản phẩm")}</span>
+
   <h1>${e(p.name)}</h1>
+
+  ${
+  p.brand
+    ? `<p class="product-brand">
+         <strong>Thương hiệu:</strong> ${e(p.brand)}
+       </p>`
+    : ""
+}
+
   <strong class="price">${S.money(p.price)}</strong>
-  <p class="description">${e(p.description || "Thông tin sản phẩm đang được cập nhật.")}</p>
-  <p class="stock-info">
-    ${inStock
-      ? `<span class="stock-ok">● Còn hàng</span> — ${Number(p.stock)} sản phẩm`
-      : `<span class="stock-out">● Tạm hết hàng</span>`}
+
+  <p class="description">
+    ${e(p.description || "Thông tin sản phẩm đang được cập nhật.")}
   </p>
+
+  <p class="stock-info">
+    ${
+      inStock
+        ? `<span class="stock-ok">● Còn hàng</span> — ${Number(p.stock)} sản phẩm`
+        : `<span class="stock-out">● Tạm hết hàng</span>`
+    }
+  </p>
+
+  ${
+    warrantyMonths > 0
+      ? `<p><strong>Bảo hành:</strong> ${warrantyMonths} tháng</p>`
+      : ""
+  }
+
   <div class="quantity-row">
     <span class="quantity-label">Số lượng</span>
-    <input id="buy-quantity" class="quantity-input" type="number" value="1" min="1" max="${Math.min(99, p.stock)}" ${inStock ? "" : "disabled"}>
+
+    <input
+      id="buy-quantity"
+      class="quantity-input"
+      type="number"
+      value="1"
+      min="1"
+      max="${Math.max(1, Math.min(99, Number(p.stock) || 1))}"
+      ${inStock ? "" : "disabled"}
+    >
   </div>
+
   <div class="detail-actions">
-    <button class="button" data-add="${p.id}" ${inStock ? "" : "disabled"}>Thêm vào giỏ hàng</button>
-    <a class="button secondary" href="${S.page("cart")}">Xem giỏ hàng</a>
+    <button class="button" data-add="${p.id}" ${inStock ? "" : "disabled"}>
+      Thêm vào giỏ hàng
+    </button>
+
+    <a class="button secondary" href="${S.page("cart")}">
+      Xem giỏ hàng
+    </a>
   </div>
-  <p class="detail-note">Thanh toán khi nhận hàng (COD) · Giao hàng toàn quốc · Bảo hành chính hãng</p>
-</div>`;
+
+  <p class="detail-note">
+    Thanh toán khi nhận hàng (COD) · Giao hàng toàn quốc
+  </p>
+</div>
+
+${
+  specEntries.length
+    ? `
+      <section class="detail-specs">
+        <h2>Thông số kỹ thuật</h2>
+
+        <div class="detail-specs-table">
+          ${specEntries.map(([label, value]) => `
+            <div class="detail-spec-row">
+              <strong>${e(label)}</strong>
+              <span>${e(String(value))}</span>
+            </div>
+          `).join("")}
+        </div>
+      </section>
+    `
+    : ""
+}
+`;
+
+// Bấm ảnh nhỏ để đổi ảnh lớn
+root.querySelectorAll("[data-gallery-index]").forEach((button) => {
+  button.addEventListener("click", () => {
+    const index = Number(button.dataset.galleryIndex);
+    const mainImage = root.querySelector("#detail-main-image");
+
+    if (!mainImage || !productImages[index]) return;
+
+    mainImage.src = S.image(productImages[index]);
+
+    root.querySelectorAll("[data-gallery-index]").forEach((thumb) => {
+      thumb.classList.toggle("is-active", thumb === button);
+    });
+  });
+});
       try {
         const { data } = await S.api(
           "products.php?category_id=" + p.category_id + "&limit=5",
