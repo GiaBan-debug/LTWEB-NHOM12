@@ -7,44 +7,74 @@
 
   /* ---- URL helpers ---- */
   const root = new URL("../../../", document.currentScript.src);
-  const url  = (path) => new URL(path, root).href;
+  const url = (path) => new URL(path, root).href;
 
   /* ---- HTML escape ---- */
   const escape = (value) =>
-    String(value ?? "").replace(/[&<>"']/g, (c) =>
-      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]
+    String(value ?? "").replace(
+      /[&<>"']/g,
+      (c) =>
+        ({
+          "&": "&amp;",
+          "<": "&lt;",
+          ">": "&gt;",
+          '"': "&quot;",
+          "'": "&#39;",
+        })[c],
     );
 
   /* ---- CSRF ---- */
   let csrfPromise;
   async function csrf() {
     csrfPromise ??= fetch(url("backend/api/csrf.php"), {
-      credentials: "same-origin", cache: "no-store",
-    }).then(async (r) => {
-      const p = await r.json();
-      if (!r.ok || !p.success) throw new Error(p.message || "Không lấy được phiên đăng nhập.");
-      return p.data.csrf_token;
-    }).catch((e) => { csrfPromise = null; throw e; });
+      credentials: "same-origin",
+      cache: "no-store",
+    })
+      .then(async (r) => {
+        const p = await r.json();
+        if (!r.ok || !p.success)
+          throw new Error(p.message || "Không lấy được phiên đăng nhập.");
+        return p.data.csrf_token;
+      })
+      .catch((e) => {
+        csrfPromise = null;
+        throw e;
+      });
     return csrfPromise;
   }
 
   /* ---- API transport ---- */
-  async function api(file, { method = "GET", body, restoreSession = true } = {}) {
+  async function api(
+    file,
+    { method = "GET", body, restoreSession = true } = {},
+  ) {
     const headers = { Accept: "application/json" };
     if (method !== "GET") headers["X-CSRF-Token"] = await csrf();
     if (body !== undefined) headers["Content-Type"] = "application/json";
     const response = await fetch(url("backend/api/" + file), {
-      method, headers, credentials: "same-origin", cache: "no-store",
+      method,
+      headers,
+      credentials: "same-origin",
+      cache: "no-store",
       body: body === undefined ? undefined : JSON.stringify(body),
     });
     let result;
-    try { result = await response.json(); } catch {
+    try {
+      result = await response.json();
+    } catch {
       throw new Error("Máy chủ không trả JSON hợp lệ. Kiểm tra cấu hình PHP.");
     }
     if (!response.ok || !result.success) {
-      if (response.status === 401 && restoreSession && window.Auth && !/^(me|firebase-session|login|logout|register|csrf|auth-config)\.php/.test(file)) {
+      if (
+        response.status === 401 &&
+        restoreSession &&
+        window.Auth &&
+        !/^(me|firebase-session|login|logout|register|csrf|auth-config)\.php/.test(
+          file,
+        )
+      ) {
         const user = await Auth.currentUser();
-        if (user) return api(file, {method, body, restoreSession:false});
+        if (user) return api(file, { method, body, restoreSession: false });
       }
       if (response.status === 403) csrfPromise = null;
       const error = new Error(result.message || "Yêu cầu thất bại.");
@@ -60,7 +90,9 @@
 
   /* Cùng quy tắc với backend/includes/functions.php normalizePhone(). */
   function normalizePhone(raw) {
-    let phone = String(raw ?? "").trim().replace(/[\s.\-()]/g, "");
+    let phone = String(raw ?? "")
+      .trim()
+      .replace(/[\s.\-()]/g, "");
     if (/^84\d{9}$/.test(phone)) phone = "+" + phone;
     const withTrunk = phone.match(/^(?:\+84|84)0(\d{9})$/);
     if (withTrunk) phone = "0" + withTrunk[1];
@@ -68,10 +100,14 @@
   }
 
   const payable = (order) =>
-    Number(order.total_amount ?? order.total_price ?? 0) + Number(order.shipping_fee || 0);
+    Number(order.total_amount ?? order.total_price ?? 0) +
+    Number(order.shipping_fee || 0);
 
   function image(path) {
-    if (typeof path !== "string" || !/^products\/[a-zA-Z0-9_-]+\.(jpg|jpeg|png|webp|avif)$/i.test(path))
+    if (
+      typeof path !== "string" ||
+      !/^products\/[a-zA-Z0-9_-]+\.(jpg|jpeg|png|webp|avif)$/i.test(path)
+    )
       return url("frontend/assets/images/logo1.avif");
     return url("uploads/" + path);
   }
@@ -81,11 +117,11 @@
 
   /* ---- Status labels ---- */
   const labels = {
-    pending:    "Chờ xác nhận",
+    pending: "Chờ xác nhận",
     processing: "Đang chuẩn bị",
-    shipped:    "Đang giao",
-    completed:  "Hoàn thành",
-    cancelled:  "Đã hủy",
+    shipped: "Đang giao",
+    completed: "Hoàn thành",
+    cancelled: "Đã hủy",
   };
 
   /* ---- SVG icons (inline, BTA style) ---- */
@@ -106,9 +142,9 @@
 
   /* Icon cho từng danh mục theo slug */
   const categoryIcons = {
-    "dien-thoai":    icons.phone,
-    "laptop":        icons.laptop,
-    "phu-kien":      icons.accessory,
+    "dien-thoai": icons.phone,
+    laptop: icons.laptop,
+    "phu-kien": icons.accessory,
     "may-tinh-bang": icons.tablet,
   };
 
@@ -120,9 +156,15 @@
   /* ---- Login redirect ---- */
   function login() {
     const current = location.pathname.split("/").pop();
-    const folder = location.pathname.includes('/users/') ? 'users/' : location.pathname.includes('/admin/') ? 'admin/' : '';
+    const folder = location.pathname.includes("/users/")
+      ? "users/"
+      : location.pathname.includes("/admin/")
+        ? "admin/"
+        : "";
     const redirect = folder + current + location.search;
-    location.href = url("frontend/pages/login.html?redirect=" + encodeURIComponent(redirect));
+    location.href = url(
+      "frontend/pages/login.html?redirect=" + encodeURIComponent(redirect),
+    );
   }
 
   /* ---- Cart count badge ---- */
@@ -131,21 +173,26 @@
       const result = await api("cart.php");
       document.querySelectorAll("[data-cart-count]").forEach((el) => {
         el.textContent = result.data.total_items;
-        el.closest(".cart-badge-wrap")?.classList.toggle("hidden", result.data.total_items === 0);
+        el.closest(".cart-badge-wrap")?.classList.toggle(
+          "hidden",
+          result.data.total_items === 0,
+        );
       });
-    } catch { /* guest stays zero */ }
+    } catch {
+      /* guest stays zero */
+    }
   }
 
   /* ---- Category card ---- */
   function categoryCard(c, i) {
     const slugMap = {
-      "Điện thoại":    "dien-thoai",
-      "Laptop":        "laptop",
-      "Phụ kiện":      "phu-kien",
+      "Điện thoại": "dien-thoai",
+      Laptop: "laptop",
+      "Phụ kiện": "phu-kien",
       "Máy tính bảng": "may-tinh-bang",
     };
-    const slug  = slugMap[c.name] ?? c.slug ?? "";
-    const icon  = categoryIcons[slug] ?? icons.phone;
+    const slug = slugMap[c.name] ?? c.slug ?? "";
+    const icon = categoryIcons[slug] ?? icons.phone;
     const count = Number(c.product_count);
     return `
 <a class="category-tile" href="${page("products", "?category_id=" + c.id)}">
@@ -207,7 +254,9 @@
       : `<span class="check-dot">${icons.check}</span> ${escape(message)}`;
     el.hidden = false;
     clearTimeout(toast._timer);
-    toast._timer = setTimeout(() => { el.hidden = true; }, 3800);
+    toast._timer = setTimeout(() => {
+      el.hidden = true;
+    }, 3800);
   }
 
   /* ---- Order detail ---- */
@@ -231,12 +280,16 @@
       <p>Ghi chú: ${escape(o.note || "Không có")}</p>
     </div>
   </div>
-  ${o.items.map((i) => `
+  ${o.items
+    .map(
+      (i) => `
   <div class="order-item">
     <img src="${image(i.image)}" alt="${escape(i.name)}">
     <div><b>${escape(i.name)}</b><br><small class="subtle">${Number(i.quantity)} × ${money(i.price)}</small></div>
     <strong>${money(i.subtotal)}</strong>
-  </div>`).join("")}
+  </div>`,
+    )
+    .join("")}
   <div class="order-total">
     <b>Tổng thanh toán</b>
     <strong class="price">${money(payable(o))}</strong>
@@ -320,7 +373,9 @@
       if (!addBtn || addBtn.disabled) return;
       addBtn.disabled = true;
       try {
-        const quantity = Number(document.querySelector("#buy-quantity")?.value || 1);
+        const quantity = Number(
+          document.querySelector("#buy-quantity")?.value || 1,
+        );
         await api("cart.php", {
           method: "POST",
           body: { product_id: Number(addBtn.dataset.add), quantity },
@@ -338,9 +393,23 @@
 
   /* ---- Export ---- */
   window.Shop = {
-    url, api, escape, money, image, page, normalizePhone, payable,
-    labels, error, login,
-    categoryCard, productCard, pagination,
-    toast, updateCartCount, orderDetail,
+    url,
+    csrf,
+    api,
+    escape,
+    money,
+    image,
+    page,
+    normalizePhone,
+    payable,
+    labels,
+    error,
+    login,
+    categoryCard,
+    productCard,
+    pagination,
+    toast,
+    updateCartCount,
+    orderDetail,
   };
 })();
