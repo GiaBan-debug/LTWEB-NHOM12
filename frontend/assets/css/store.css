@@ -297,7 +297,7 @@ p  { margin-top: 0; }
 /* ============================================================
    HERO — TRANG CHỦ
    ============================================================ */
-.hero {
+ .hero{
   position: relative;
   display: grid;
   min-height: 560px;
@@ -533,7 +533,7 @@ p  { margin-top: 0; }
 .product-photo img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   transition: transform .5s;
 }
 .product-tile:hover .product-photo img { transform: scale(1.04); }
@@ -577,8 +577,32 @@ p  { margin-top: 0; }
   margin-top: auto;
   padding-top: 16px;
 }
-.product-bottom .price { font-size: 18px; }
-
+/* Thông tin giá và tồn kho */
+.product-price-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+  min-height: 48px;
+}
+.product-price-info .price {
+  display: block;
+  line-height: 1.3;
+}
+.product-stock-label {
+  display: block;
+  font-size: 12px;
+  line-height: 1.4;
+}
+.product-stock-label.is-in-stock {
+  color: #15803d;
+}
+.product-stock-label.is-out-of-stock {
+  color: #dc2626;
+}
+.product-bottom .price {
+  font-size: 18px;
+}
 .add-btn {
   display: grid;
   place-items: center;
