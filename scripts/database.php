@@ -2,7 +2,7 @@
 declare(strict_types=1);
 if (PHP_SAPI !== 'cli') { http_response_code(404); exit; }
 require_once __DIR__ . '/../backend/config/database.php';
-function migrateTv5Database(PDO $db): void
+function migrateDatabase(PDO $db): void
 {
     // Inspect before each ALTER: safe to rerun on original/demo/current schemas.
     $columns = array_column($db->query('SHOW FULL COLUMNS FROM users')->fetchAll(PDO::FETCH_ASSOC), null, 'Field');
@@ -41,7 +41,39 @@ function migrateTv5Database(PDO $db): void
         $db->exec('UPDATE order_items oi JOIN products p ON p.id = oi.product_id SET oi.image = p.thumbnail');
     }
 }
+
 if (realpath($_SERVER['SCRIPT_FILENAME'] ?? '') === __FILE__) {
-    migrateTv5Database(getDB());
-    echo "TV5 migration complete; existing users, passwords, roles, carts and orders preserved.\n";
+    $options = getopt('', ['initialize', 'seed']);
+    if (isset($options['seed']) && !isset($options['initialize'])) throw new RuntimeException('--seed requires --initialize and an empty database.');
+    if (isset($options['initialize'])) {
+        $name = appConfig('DB_NAME', 'ltweb_nhom12');
+        if (!preg_match('/^[a-zA-Z0-9_]+$/', $name)) throw new RuntimeException('Invalid database name.');
+        $dsn = 'mysql:host=' . appConfig('DB_HOST', '127.0.0.1') . ';port=' . appConfig('DB_PORT', '3306') . ';charset=utf8mb4';
+        $optionsPDO = [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION];
+        try {
+            $db = new PDO($dsn . ';dbname=' . $name, appConfig('DB_USER', 'root'), appConfig('DB_PASSWORD'), $optionsPDO);
+        } catch (PDOException $error) {
+            if (($error->errorInfo[1] ?? null) !== 1049) throw $error;
+            $db = new PDO($dsn, appConfig('DB_USER', 'root'), appConfig('DB_PASSWORD'), $optionsPDO);
+            $db->exec("CREATE DATABASE `$name` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
+            $db->exec("USE `$name`");
+        }
+        if (!$db->query('SHOW TABLES')->fetchAll()) {
+            $db->exec(file_get_contents(__DIR__ . '/../database/schema.sql'));
+            if (isset($options['seed'])) $db->exec(file_get_contents(__DIR__ . '/../database/seed.sql'));
+            echo "Database initialized.\n";
+        } else {
+            echo "Existing database preserved; seed was not imported.\n";
+        }
+    } else {
+        $db = getDB();
+    }
+    migrateDatabase($db);
+    // Admin history migration shares this entry point and is safe to rerun.
+    $historySql = file_get_contents(__DIR__ . '/../database/migration-tv4.sql');
+    $historySql = preg_replace('/CREATE INDEX IF NOT EXISTS idx_order_created ON orders\(created_at\);/', '', $historySql);
+    $db->exec($historySql);
+    $indexes = array_column($db->query('SHOW INDEX FROM orders')->fetchAll(PDO::FETCH_ASSOC), 'Key_name');
+    if (!in_array('idx_order_created', $indexes, true)) $db->exec('CREATE INDEX idx_order_created ON orders(created_at)');
+    echo "Database up to date; existing accounts and business data preserved.\n";
 }

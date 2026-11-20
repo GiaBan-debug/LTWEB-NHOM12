@@ -1,7 +1,7 @@
 @echo off
 setlocal
 cd /d "%~dp0"
-powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0scripts\start-demo.ps1" %*
+powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0scripts\start.ps1" %*
 set "demoExitCode=%errorlevel%"
 if not "%demoExitCode%"=="0" (
     echo.

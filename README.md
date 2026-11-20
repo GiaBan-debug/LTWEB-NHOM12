@@ -1,6 +1,6 @@
 # Nhóm 12 Store — PHP/MySQL demo
 
-> **Cập nhật TV5 (20/11/2026):** mặc định dùng Firebase **Google sign-in** của project `bta-store`. Trong `AUTH_MODE=legacy`, nhập **0916111111** (admin) hoặc **0916222222** (user), không cần mật khẩu/OTP. Đây là hai danh tính thử riêng; các tài khoản email/mật khẩu seed bên dưới được giữ làm dữ liệu cũ, không dùng để đăng nhập nữa. Xem [hướng dẫn TV5](docs/TV5_FIREBASE.md).
+> Mặc định dùng Firebase **Google sign-in** của project `bta-store`. Trong `AUTH_MODE=legacy`, nhập **0916111111** (admin) hoặc **0916222222** (user), không cần mật khẩu/OTP. Xem [cấu hình xác thực](#firebase-authentication).
 
 Website bán điện thoại, laptop, tablet và phụ kiện, dành cho đồ án/portfolio. Có dữ liệu MySQL thật, mua hàng COD và quản trị; chưa tích hợp thanh toán hoặc vận chuyển thực tế.
 
@@ -8,7 +8,7 @@ Website bán điện thoại, laptop, tablet và phụ kiện, dành cho đồ �
 
 Máy đang có PHP tại `C:\xampp\php\php.exe`. MariaDB portable nằm trong `.local-test/`, không cài Windows service và chỉ lắng nghe `127.0.0.1`.
 
-Máy clone mới cần chạy `powershell -ExecutionPolicy Bypass -File scripts/install-dependencies.ps1` một lần để cài thư viện xác minh JWT. Website dùng mạng khi đăng nhập Google. Lần đầu Google tạo tài khoản user; cấp admin bằng script hướng dẫn trong docs/TV5_FIREBASE.md.
+Máy clone mới cần chạy `powershell -ExecutionPolicy Bypass -File scripts/setup.ps1` một lần để cài thư viện xác minh JWT. Website dùng mạng khi đăng nhập Google. Lần đầu Google tạo tài khoản user; xem cách cấp admin bên dưới.
 
 Mở **CMD hoặc terminal VS Code**, tại thư mục dự án chạy:
 
@@ -16,7 +16,20 @@ Mở **CMD hoặc terminal VS Code**, tại thư mục dự án chạy:
 run-demo.bat
 ```
 
-Mở **http://localhost:8000/**. Giữ terminal mở; nhấn Ctrl+C để dừng. Script bật driver PHP cần thiết, khởi động database cổng 3307, tạo database riêng `ltweb_nhom12_demo` nếu chưa có và giữ lại dữ liệu giữa các lần chạy. Không xóa/reset database đang có.
+Mở **http://localhost:8000/**. Giữ terminal mở; nhấn Ctrl+C để dừng. Script đọc kết nối database từ `.env`, bật driver PHP và cập nhật các bảng/cột còn thiếu. Với cấu hình portable cổng 3307, script tự mở MariaDB nếu cần; với XAMPP/MySQL riêng, bật database trước. Dữ liệu hiện có được giữ nguyên, không tự nhập lại seed. Database mới được tạo schema trống.
+
+## Các script cần dùng
+
+| File | Công dụng |
+| --- | --- |
+| `scripts/setup.ps1` | Cài thư viện PHP; thêm `-Portable` nếu cần tải MariaDB riêng |
+| `scripts/start.ps1` | Chạy website theo `.env`; `run-demo.bat` gọi file này |
+| `scripts/database.php` | Cập nhật schema; `--initialize` tạo database mới nếu cần |
+| `scripts/firebase-admin.ps1` | Cấp/thu quyền admin theo email |
+| `scripts/firebase-user.php` | CLI liên kết tài khoản Firebase và cập nhật quyền |
+| `scripts/package-host.ps1` | Đóng gói ứng dụng để upload hosting |
+
+Không cần chạy các script setup/test riêng. Database mới có thể nhập `database/seed.sql` một lần để có sản phẩm mẫu; hoặc chạy `scripts/database.php --initialize --seed` trên database trống. Script bỏ qua seed nếu database đã có bảng. `.local-test/` hiện chứa dữ liệu MariaDB và công cụ tải về trên máy này; không xóa thư mục đó khi chưa sao lưu database.
 
 Nếu cổng 8000 đang được server cũ sử dụng:
 
@@ -27,7 +40,7 @@ run-demo.bat -Port 8012
 Nếu clone trên máy khác và chưa có MariaDB portable, chạy một lần:
 
 ```cmd
-powershell -NoProfile -ExecutionPolicy Bypass -File scripts\setup-local.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\setup.ps1 -Portable
 ```
 
 Script tải MariaDB 11.4.5 portable (~90 MB) từ archive chính thức vào `.local-test/`. Thư mục này bị bỏ qua bởi Git, không upload lên hosting. Cần PHP 8.1 trở lên và Node.js chỉ khi chạy các test Playwright; PHP và MariaDB là đủ để chạy website.
@@ -38,23 +51,28 @@ Nếu PHP nằm chỗ khác:
 run-demo.bat -PhpPath "D:\xampp\php\php.exe"
 ```
 
-## Tài khoản demo & Xác thực Firebase
+## Firebase Authentication
 
-| Vai trò | Email đăng nhập | Mật khẩu | Firebase UID (seed) | Ghi chú |
-| --- | --- | --- | --- | --- |
-| Admin | admin@ltweb.com | 123456 | NULL | Quản trị Dashboard, Sản phẩm, Đơn hàng |
-| Khách hàng 1 | user1@ltweb.com | 123456 | NULL | Đã có sẵn 3 đơn hàng ở các trạng thái |
-| Khách hàng 2 | user2@ltweb.com | 123456 | NULL | Đã có 2 đơn hàng (hoàn thành, đã hủy) |
+Đặt `AUTH_MODE=firebase` trong `.env`, bật Google trong Firebase Authentication và thêm domain website vào Authorized domains. Cấu hình Web App nằm trong `.env.example`; không đưa service-account/private key lên frontend hoặc Git. PHP cần PDO MySQL, mbstring, OpenSSL, cURL; upload ảnh cần fileinfo. Thư mục `var/` cần quyền ghi để cache chứng thư công khai.
 
 Chọn cơ chế bằng `AUTH_MODE`:
 1. **`legacy` (chỉ kiểm thử):** nhập SĐT 0916111111 (admin) hoặc 0916222222 (user). Backend tạo hai user thử riêng ở lần đầu, giữ cùng ID/giỏ/đơn cho các lần sau. Không xác minh quyền sở hữu SĐT, không dùng chế độ này khi triển khai thật.
 2. **`firebase` (mặc định):** đăng nhập Google qua Firebase Web SDK, gửi **ID token có chữ ký** tới `backend/api/firebase-session.php`. Route tương thích `firebase-auth.php` cũng xác minh đầy đủ; không chấp nhận UID do client tự gửi. Email/Password Firebase hiện chưa bật.
 
-UID trong dữ liệu seed để `NULL`; các chuỗi UID demo không phải tài khoản Firebase. Xem `docs/TV5_FIREBASE.md` để liên kết tài khoản cũ có kiểm soát, giữ lịch sử và cấp quyền admin.
+UID trong dữ liệu seed để `NULL`; tài khoản email/mật khẩu seed cũ không dùng để đăng nhập Google. Backend xác minh ID token rồi liên kết theo `users.firebase_uid`, giữ hồ sơ/quyền/giỏ/đơn trong MySQL. Không tự liên kết tài khoản cũ chỉ vì trùng email. Phiên PHP mặc định tối đa 3.600 giây, không vượt hạn ID token; đăng xuất xóa cả phiên Firebase và PHP. Form SĐT hiện chỉ chuẩn bị bước OTP, chưa gửi SMS.
+
+Để cấp admin, đăng nhập Google vào website trước, rồi chạy PowerShell tại gốc dự án:
+
+```powershell
+.\scripts\firebase-admin.ps1 -Email "emailcuaban@gmail.com"
+```
+
+Script đọc database từ `.env`. Thêm `-Role user` để thu quyền admin. Tải lại website sau khi đổi quyền. Các tham số `-DatabaseName`, `-DatabasePort`, `-PhpPath` chỉ cần khi muốn ghi đè cấu hình.
+
+Để liên kết một tài khoản cũ, CLI `scripts/firebase-user.php --user-id=ID --link` nhận Firebase ID token qua stdin và yêu cầu email đã xác minh khớp tài khoản cũ. Không ghi token vào file hoặc tham số command line. Sao lưu trước khi thay đổi liên kết tài khoản.
 
 Tài liệu chi tiết:
 - Sơ đồ ERD & Đặc tả CSDL: [`docs/DATABASE_ERD.md`](docs/DATABASE_ERD.md)
-- Kịch bản demo & Checklist trước báo cáo: [`docs/KICH_BAN_DEMO.md`](docs/KICH_BAN_DEMO.md)
 - File migration TV6 (Firebase UID, Profile, Vận chuyển, Specs): [`database/migration-tv6.sql`](database/migration-tv6.sql)
 
 ## Dùng MySQL/XAMPP sẵn có
@@ -108,7 +126,7 @@ Khởi động MariaDB portable bằng `run-demo.bat`, sau đó mở terminal **
 $env:DB_PORT='3307'
 $env:DB_NAME='ltweb_nhom12_test'
 $env:AUTH_MODE='legacy'
-& C:/xampp/php/php.exe -d extension_dir=C:/xampp/php/ext -d extension=pdo_mysql -d extension=mbstring scripts/setup-demo.php
+& C:/xampp/php/php.exe -d extension_dir=C:/xampp/php/ext -d extension=pdo_mysql -d extension=mbstring scripts/database.php --initialize --seed
 ./scripts/start.ps1 -Port 8013
 ```
 

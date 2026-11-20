@@ -1,6 +1,6 @@
 # API bản demo
 
-> Cập nhật TV5: mặc định Firebase Google Auth. Đọc `TV5_FIREBASE.md`; AUTH_MODE=legacy chỉ dùng thử với SĐT 0916111111 (admin), 0916222222 (user), không cần mật khẩu/OTP. Firebase mode chặn endpoint đăng nhập thử. Thêm GET auth-config.php và POST firebase-session.php với body id_token + CSRF.
+> Mặc định Firebase Google Auth. Xem [cấu hình xác thực trong README](../README.md#firebase-authentication). AUTH_MODE=legacy chỉ dùng thử với SĐT 0916111111 (admin), 0916222222 (user), không cần mật khẩu/OTP. Firebase mode chặn endpoint đăng nhập thử. Thêm GET auth-config.php và POST firebase-session.php với body id_token + CSRF.
 
 Gốc URL: `backend/api/` tương đối với thư mục dự án. Không viết cứng localhost hoặc tên thư mục máy cá nhân trong frontend.
 
