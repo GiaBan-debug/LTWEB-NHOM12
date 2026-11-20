@@ -216,10 +216,12 @@
     <span class="eyebrow">${escape(p.category_name)}</span>
     <h3><a href="${page("product-detail", "?id=" + p.id)}">${escape(p.name)}</a></h3>
     <div class="product-bottom">
-      <div>
-        <strong class="price">${money(p.price)}</strong>
-        <small class="subtle">${inStock ? "Còn " + Number(p.stock) + " sản phẩm" : "Tạm hết hàng"}</small>
-      </div>
+  <div class="product-price-info">
+    <strong class="price">${money(p.price)}</strong>
+    <small class="product-stock-label ${inStock ? "is-in-stock" : "is-out-of-stock"}">
+      ${inStock ? "Còn " + Number(p.stock) + " sản phẩm" : "Tạm hết hàng"}
+    </small>
+  </div>
       <button class="add-btn" data-add="${p.id}" ${inStock ? "" : "disabled"} aria-label="Thêm ${escape(p.name)} vào giỏ">
         ${icons.bag}
       </button>
@@ -315,7 +317,7 @@
     <a href="${page("order-history")}">Đơn hàng</a>
   </nav>
   <div class="header-tools">
-    <a class="cart-link" href="${page("cart")}">
+    <a class="cart-link" href="${page("cart")}" aria-label="Giỏ hàng">
       ${icons.bag}
       <span class="cart-badge" data-cart-count>0</span>
     </a>
@@ -341,11 +343,21 @@
     <h3>Khám phá</h3>
     <a href="${page("products")}">Tất cả sản phẩm</a>
     <a href="${page("categories")}">Danh mục sản phẩm</a>
+    <a href="${page("about")}">Giới thiệu & Liên hệ</a>
+    <a href="${page("policies")}">Chính sách cửa hàng</a>
   </div>
   <div>
     <h3>Tài khoản</h3>
     <a href="${page("profile")}">Thông tin cá nhân</a>
     <a href="${page("order-history")}">Lịch sử đơn hàng</a>
+  </div>
+  <div>
+  <h3>Thông tin liên hệ</h3>
+  <p>BTA STORE</p>
+  <p>Địa chỉ: Số 2, đường Võ Oanh, phường Thạnh Mỹ Tây, TP.HCM.</p>
+  <p>Hotline: 0935174331</p>
+  <p>Email: bta-store@gmail.com</p>
+  <p>Giờ hỗ trợ: 08:00 - 22:00</p>
   </div>
 </div>
 <div class="shell footer-bottom">

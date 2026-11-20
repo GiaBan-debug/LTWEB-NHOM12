@@ -1,10 +1,10 @@
 @media (max-width: 992px) {
     .topbar {
-        flex-wrap: wrap;        
+        flex-wrap: wrap;
         gap: 15px;
     }
     .search {
-        order: 3;               
+        order: 3;
         width: 100%;
     }
     #search-input {
@@ -32,7 +32,7 @@ flex: 1 1 calc(50% - 15px);
         font-size: 14px;
     }
     .hotline-bar {
-        flex-direction: column;      
+        flex-direction: column;
         align-items: flex-start;
         gap: 12px;
         border-radius: 20px;
@@ -45,12 +45,12 @@ flex: 1 1 calc(50% - 15px);
         font-size: 18px;
     }
     .deal-list {
-        flex-wrap: nowrap;            
+        flex-wrap: nowrap;
         overflow-x: auto;
         scroll-snap-type: x mandatory;
     }
     .card {
-        flex: 0 0 80%;                
+        flex: 0 0 80%;
         scroll-snap-align: start;
     }
 .footer-inner {
@@ -65,4 +65,36 @@ flex: 1 1 calc(50% - 15px);
 @media (max-width: 600px) {
     #cart-drawer { width: 100%; }
     .toolbar select { flex: 1; }
+}
+/* ---------- Responsive Hero ---------- */
+@media (max-width: 992px) {
+    .hero {
+        min-height: 480px;
+    }
+}
+
+@media (max-width: 600px) {
+    .hero {
+        min-height: auto;
+        grid-template-columns: 1fr;
+        border-radius: 20px;
+    }
+
+    .hero-copy {
+        padding: 30px 22px 250px;
+    }
+
+    .hero-copy h1 {
+        font-size: 34px;
+    }
+
+    .hero-image-col {
+        inset: auto 0 0 0;
+        height: 250px;
+        background-image:
+            linear-gradient(180deg, #fff 0%, rgba(255,255,255,.1) 55%),
+            url("../../../uploads/products/macbook-air-m3.jpg");
+        background-size: cover;
+        background-position: center;
+    }
 }

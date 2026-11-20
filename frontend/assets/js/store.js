@@ -4,8 +4,7 @@
     e = S.escape;
   const view = document.body.dataset.view;
   const params = new URLSearchParams(location.search);
-  const categoryCard = (c, i) =>
-    `<a class="category-tile" href="${S.page("products", "?category_id=" + c.id)}"><span class="category-icon">${["▯", "▱", "◉", "▣"][i % 4]}</span><h3>${e(c.name)}</h3><p>${Number(c.product_count)} sản phẩm · Khám phá →</p></a>`;
+
   async function categories() {
     return (await S.api("categories.php")).data;
   }
@@ -15,7 +14,7 @@
         categories()
           .then((list) => {
             document.querySelector("#home-categories").innerHTML =
-              list.map(categoryCard).join("") || "<p>Chưa có danh mục.</p>";
+              list.map(S.categoryCard).join("") || "<p>Chưa có danh mục.</p>";
           })
           .catch((err) =>
             S.error(document.querySelector("#home-categories"), err.message),
@@ -33,7 +32,7 @@
     }
     if (view === "categories") {
       document.querySelector("#category-list").innerHTML =
-        (await categories()).map(categoryCard).join("") ||
+        (await categories()).map(S.categoryCard).join("") ||
         '<div class="empty">Chưa có danh mục.</div>';
     }
     if (view === "products") {

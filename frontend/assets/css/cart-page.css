@@ -164,3 +164,13 @@
     font-size: 14px;
   }
 }
+.checkout-policies {
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--muted);
+    margin: 16px 0;
+}
+.checkout-policies a {
+    color: #2563eb;
+    text-decoration: underline;
+}
