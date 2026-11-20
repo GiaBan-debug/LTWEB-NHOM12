@@ -1,4 +1,4 @@
-﻿/* shop.js — BTA Store Design · Nhóm 12
+/* shop.js — BTA Store Design · Nhóm 12
    Shared utilities: URL helper, API transport, UI components.
    Nguồn thiết kế: BTA Store Figma (Be Vietnam Pro, Apple-style).
 */
@@ -93,10 +93,9 @@
     let phone = String(raw ?? "")
       .trim()
       .replace(/[\s.\-()]/g, "");
-    if (/^84\d{9}$/.test(phone)) phone = "+" + phone;
-    const withTrunk = phone.match(/^(?:\+84|84)0(\d{9})$/);
-    if (withTrunk) phone = "0" + withTrunk[1];
-    return /^(0|\+84)\d{9}$/.test(phone) ? phone : "";
+    const match = phone.match(/^(?:\+84|84)0?(\d{9})$/);
+    if (match) phone = "0" + match[1];
+    return /^0\d{9}$/.test(phone) ? phone : "";
   }
 
   const payable = (order) =>

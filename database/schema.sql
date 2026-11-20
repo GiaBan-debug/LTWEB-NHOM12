@@ -148,6 +148,25 @@ CREATE TABLE IF NOT EXISTS order_items (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ----------------------------
+-- Bảng lịch sử trạng thái đơn hàng (TV4)
+-- ----------------------------
+CREATE TABLE IF NOT EXISTS order_status_logs (
+    id            INT UNSIGNED  AUTO_INCREMENT PRIMARY KEY,
+    order_id      INT UNSIGNED  NOT NULL,
+    from_status   VARCHAR(20)   NOT NULL,
+    to_status     VARCHAR(20)   NOT NULL,
+    handled_by    INT UNSIGNED  NULL,          -- NULL = khách tự hủy
+    handler_name  VARCHAR(100)  NOT NULL DEFAULT '',
+    cancel_reason TEXT          NULL,           -- lý do hủy (nếu có)
+    created_at    TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_log_order
+        FOREIGN KEY (order_id) REFERENCES orders(id)
+        ON DELETE CASCADE ON UPDATE CASCADE,
+    INDEX idx_log_order (order_id),
+    INDEX idx_log_time  (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ----------------------------
 -- Bảng bài viết (TV5 dùng)
 -- ----------------------------
 CREATE TABLE IF NOT EXISTS posts (
