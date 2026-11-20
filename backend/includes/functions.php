@@ -93,15 +93,18 @@ function positiveInt(mixed $value): ?int
     return $id === false ? null : $id;
 }
 
-/** Chuẩn hóa SĐT Việt Nam: bỏ khoảng trắng/dấu chấm/gạch, nhận 0…, +84… và 84…. */
-function normalizePhone(string $raw): ?string
+/** Chuẩn hóa SĐT Việt Nam: bỏ khoảng trắng/dấu chấm/gạch, nhận 0…, +84… và 84…, chuẩn hóa về dạng 0xxxxxxxxx. */
+function normalizePhone(string $raw): string
 {
     $phone = preg_replace('/[\s.\-()]/', '', trim($raw)) ?? '';
-    if ($phone === '') return null;
-    if (preg_match('/^84\d{9}$/', $phone)) $phone = '+' . $phone;
-    if (preg_match('/^\+840(\d{9})$/', $phone, $match)) $phone = '0' . $match[1];
-    if (preg_match('/^840(\d{9})$/', $phone, $match)) $phone = '0' . $match[1];
-    return preg_match('/^(0|\+84)\d{9}$/', $phone) ? $phone : null;
+    if ($phone === '') throw new ApiException('Số điện thoại không được để trống.', 422);
+    if (preg_match('/^(?:\+84|84)0?(\d{9})$/', $phone, $match)) {
+        $phone = '0' . $match[1];
+    }
+    if (!preg_match('/^0\d{9}$/', $phone)) {
+        throw new ApiException('Số điện thoại không hợp lệ (VD: 0912345678 hoặc +84 912 345 678).', 422);
+    }
+    return $phone;
 }
 
 /** Phí giao hàng demo: miễn phí từ 2.000.000 ₫, đơn có hàng dưới mức đó 30.000 ₫. */

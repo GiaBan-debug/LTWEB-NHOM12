@@ -25,8 +25,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
     if (mb_strlen($name) < 2) $errors['name'] = 'Vui lòng nhập họ tên.';
     $phone = '';
     if ($rawPhone !== '') {
-        $phone = normalizePhone($rawPhone) ?? '';
-        if ($phone === '') $errors['phone'] = 'Số điện thoại không hợp lệ (VD: 0912345678 hoặc +84 912 345 678).';
+        try {
+            $phone = normalizePhone($rawPhone);
+        } catch (ApiException $e) {
+            $errors['phone'] = 'Số điện thoại không hợp lệ (VD: 0912345678 hoặc +84 912 345 678).';
+        }
     }
     if ($address !== '' && mb_strlen($address) < 5) $errors['address'] = 'Địa chỉ nhận hàng cần ít nhất 5 ký tự.';
     if ($errors) jsonResponse(false, ['errors' => $errors], 'Hãy kiểm tra thông tin hồ sơ.', 422);
