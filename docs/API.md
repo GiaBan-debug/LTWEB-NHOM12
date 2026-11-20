@@ -19,6 +19,9 @@ Frontend và backend chạy cùng origin, gửi cookie session trong mọi reque
 | logout.php | POST | Không cần body | CSRF |
 | me.php | GET | Thông tin session; không trả password | Đăng nhập |
 | me.php | PUT | name, phone, address; không sửa role/UID/email | Đăng nhập + CSRF |
+| reviews.php | GET | product_id, page; 10 đánh giá/trang, rating_average, rating_count, can_review, my_review | Công khai; my_review chỉ của phiên hiện tại |
+| reviews.php | POST | product_id, rating (1–5), feedback (1–2.000 ký tự) | Đăng nhập + CSRF + đã mua trong đơn completed |
+| reviews.php | PUT | product_id, rating, feedback; sửa đánh giá của chính mình | Đăng nhập + CSRF + đã mua trong đơn completed |
 | categories.php | GET | Danh mục kèm product_count đang bán | Công khai |
 | products.php | GET | id hoặc slug để lấy chi tiết | Công khai |
 | products.php | GET | search, category_id, min_price, max_price, sort_by, sort_dir, page, limit | Công khai |
@@ -46,3 +49,13 @@ Giỏ giới hạn 1–99 sản phẩm mỗi mặt hàng, không vượt tồn k
 Đơn dùng COD, phí ship mặc định 30.000 ₫ dưới 2.000.000 ₫ và miễn ship từ ngưỡng đó. Giỏ trả subtotal/shipping_fee/total; đơn lưu snapshot phí, total_amount đã gồm phí. Chi tiết trả `data.items`, `total_amount`, `receiver_name`, `phone`, `address`, `note`, `status`, `payment_method`, `shipping_fee`. Item lưu tên/ảnh/giá tại lúc mua, không phụ thuộc dữ liệu sản phẩm sau này.
 
 Trạng thái hợp lệ: pending → processing → shipped → completed. pending/processing có thể chuyển cancelled và được hoàn kho trong transaction. Lặp lại trạng thái hiện tại không tạo tác dụng phụ; completed/cancelled không chuyển tiếp.
+
+## Hồ sơ và đánh giá sản phẩm
+
+`PUT me.php` chỉ cập nhật trường name/phone/address được gửi; trường bị bỏ qua giữ nguyên. Điện thoại được chuẩn hóa về 10 chữ số bắt đầu bằng 0; cho phép để trống điện thoại/địa chỉ khi chưa hoàn thiện hồ sơ. Tên dài 2–100 ký tự, địa chỉ không trống phải dài 5–255 ký tự. Lỗi nhập liệu trả 422 với `data.errors` theo tên trường.
+
+Checkout dùng hồ sơ đủ thông tin để hiển thị địa chỉ mặc định cùng nút “Thay đổi”. `POST orders.php` với `use_profile: true` đọc tên/SĐT/địa chỉ mới nhất từ MySQL của chính phiên đăng nhập, không tin thông tin giao hàng gửi kèm. Vẫn gửi note và checkout_key. Khi thay đổi địa chỉ riêng cho đơn, gửi `use_profile: false` cùng receiver_name/phone/address; hồ sơ không bị thay đổi.
+
+Mỗi tài khoản được có một đánh giá cho mỗi sản phẩm đã mua thuộc đơn **completed**, có thể sửa sau đó. POST trùng trả 409; chưa mua/đơn chưa hoàn thành trả 403. Backend tự xác định user và đơn hợp lệ; không nhận user_id/order_id từ frontend để cấp quyền. Nội dung là văn bản thuần, frontend escape HTML khi hiển thị. `products.php` trả thêm rating_average/rating_count cho cả danh sách và chi tiết. Chưa có đánh giá thì trung bình là 0, giao diện ghi “Chưa có đánh giá”.
+
+Bảng `product_reviews` được thêm bằng `database/migration-reviews.sql`; chạy `scripts/database.php` hoặc trình khởi động hiện có để áp dụng an toàn, không xóa dữ liệu. Schema mới đã bao gồm bảng này.

@@ -29,6 +29,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     jsonResponse(true, ['items' => $stmt->fetchAll(), 'page' => $page, 'total_pages' => max(1, (int) ceil($total / 10)), 'total' => $total]);
 }
 $input = getJsonBody();
+if (isset($input['use_profile']) && !is_bool($input['use_profile'])) throw new ApiException('use_profile phải là boolean.', 422);
+if (($input['use_profile'] ?? false) === true) {
+    $profile = getCurrentUser();
+    $input['receiver_name'] = $profile['name'];
+    $input['phone'] = $profile['phone'] ?? '';
+    $input['address'] = $profile['address'] ?? '';
+}
 if (authMode() === 'firebase' && emailVerificationRequired() && !getCurrentUser()['email_verified']) {
     throw new ApiException('Hãy xác minh email trước khi đặt hàng.', 403, ['code' => 'EMAIL_NOT_VERIFIED']);
 }

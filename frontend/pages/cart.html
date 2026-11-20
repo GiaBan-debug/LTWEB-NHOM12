@@ -54,6 +54,11 @@
           </dl>
           <form id="checkout-form" novalidate>
             <h3 class="form__title">Thông tin giao hàng</h3>
+            <section id="saved-delivery" hidden>
+              <p id="saved-delivery-text"></p>
+              <button type="button" class="button secondary small" id="edit-delivery">Thay đổi</button>
+            </section>
+            <div id="delivery-fields">
             <label class="field"
               >Họ và tên<input
                 name="receiver_name"
@@ -83,7 +88,7 @@
                 class="field__error"
                 data-error-for="address"
               ></small></label
-            ><label class="field"
+            ></div><label class="field"
               >Ghi chú<textarea name="note" maxlength="500" rows="2"></textarea
               ><small class="field__error" data-error-for="note"></small
             ></label>

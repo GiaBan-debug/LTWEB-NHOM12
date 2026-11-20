@@ -18,6 +18,20 @@ erDiagram
     products ||--o{ cart_items : "được thêm vào"
     orders ||--o{ order_items : "gồm nhiều dòng"
     products ||--o{ order_items : "được mua trong"
+    users ||--o{ product_reviews : "viết đánh giá"
+    products ||--o{ product_reviews : "được đánh giá"
+    orders ||--o{ product_reviews : "xác nhận đã mua"
+
+    product_reviews {
+        int id PK
+        int user_id FK
+        int product_id FK
+        int order_id FK
+        int rating "1–5 sao"
+        text feedback "1–2000 ký tự tại API"
+        timestamp created_at
+        timestamp updated_at
+    }
 
     users {
         int id PK "Khóa chính nội bộ"

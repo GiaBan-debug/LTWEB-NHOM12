@@ -18,10 +18,20 @@ if (!$user) {
 
 if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
     $input = getJsonBody();
-    $name = inputString($input, 'name', 100, true);
-    $rawPhone = inputString($input, 'phone', 25);
-    $address = inputString($input, 'address', 255);
     $errors = [];
+    $values = [];
+    foreach (['name' => 100, 'phone' => 30, 'address' => 255] as $field => $max) {
+        $value = $input[$field] ?? ($user[$field] ?? '');
+        if (array_key_exists($field, $input) && !is_string($input[$field])) {
+            $errors[$field] = 'Thông tin phải là chuỗi ký tự.';
+            $value = '';
+        }
+        $values[$field] = trim($value);
+        if (mb_strlen($values[$field]) > $max) $errors[$field] = "Tối đa $max ký tự.";
+    }
+    $name = $values['name'];
+    $rawPhone = $values['phone'];
+    $address = $values['address'];
     if (mb_strlen($name) < 2) $errors['name'] = 'Vui lòng nhập họ tên.';
     $phone = '';
     if ($rawPhone !== '') {

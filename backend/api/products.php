@@ -7,7 +7,7 @@ $id = isset($_GET['id']) ? positiveInt($_GET['id']) : null;
 $slug = inputString($_GET, 'slug', 220);
 if (isset($_GET['id']) && !$id) throw new ApiException('ID sản phẩm không hợp lệ.');
 if ($id || $slug !== '') {
-    $stmt = $db->prepare('SELECT p.*, c.name AS category_name FROM products p JOIN categories c ON c.id = p.category_id WHERE p.status = ? AND ' . ($id ? 'p.id' : 'p.slug') . ' = ?');
+    $stmt = $db->prepare('SELECT p.*, c.name AS category_name, COALESCE(r.rating_average, 0) AS rating_average, COALESCE(r.rating_count, 0) AS rating_count FROM products p JOIN categories c ON c.id = p.category_id LEFT JOIN (SELECT product_id, ROUND(AVG(rating), 1) AS rating_average, COUNT(*) AS rating_count FROM product_reviews GROUP BY product_id) r ON r.product_id = p.id WHERE p.status = ? AND ' . ($id ? 'p.id' : 'p.slug') . ' = ?');
     $stmt->execute(['active', $id ?: $slug]);
     $product = $stmt->fetch();
     if (!$product) throw new ApiException('Không tìm thấy sản phẩm.', 404);
@@ -41,6 +41,6 @@ $whereSql = implode(' AND ', $where);
 $stmt = $db->prepare("SELECT COUNT(*) FROM products p WHERE $whereSql");
 $stmt->execute($params);
 $total = (int) $stmt->fetchColumn();
-$stmt = $db->prepare("SELECT p.*, c.name AS category_name FROM products p JOIN categories c ON c.id = p.category_id WHERE $whereSql ORDER BY p.$sort $dir, p.id DESC LIMIT $limit OFFSET $offset");
+$stmt = $db->prepare("SELECT p.*, c.name AS category_name, COALESCE(r.rating_average, 0) AS rating_average, COALESCE(r.rating_count, 0) AS rating_count FROM products p JOIN categories c ON c.id = p.category_id LEFT JOIN (SELECT product_id, ROUND(AVG(rating), 1) AS rating_average, COUNT(*) AS rating_count FROM product_reviews GROUP BY product_id) r ON r.product_id = p.id WHERE $whereSql ORDER BY p.$sort $dir, p.id DESC LIMIT $limit OFFSET $offset");
 $stmt->execute($params);
 jsonResponse(true, ['items' => $stmt->fetchAll(), 'total' => $total, 'page' => $page, 'limit' => $limit, 'total_pages' => max(1, (int) ceil($total / $limit))]);

@@ -251,6 +251,7 @@ root.innerHTML = `
   <span class="eyebrow">${e(p.category_name || "Sản phẩm")}</span>
 
   <h1>${e(p.name)}</h1>
+  ${S.ratingSummary(p)}
 
   ${
   p.brand
@@ -329,6 +330,10 @@ ${
 }
 `;
 
+const reviewSection = document.createElement('section');
+reviewSection.className = 'panel product-reviews';
+root.after(reviewSection);
+import(S.url('frontend/assets/js/reviews.js')).then(m => m.mountReviews(reviewSection, p.id)).catch(() => { reviewSection.textContent = 'Chưa tải được đánh giá. Hãy tải lại trang.'; });
 // Bấm ảnh nhỏ để đổi ảnh lớn
 root.querySelectorAll("[data-gallery-index]").forEach((button) => {
   button.addEventListener("click", () => {
@@ -374,6 +379,17 @@ root.querySelectorAll("[data-gallery-index]").forEach((button) => {
           S.orderDetail(data) +
           (data.status === 'pending' ? '<button class="button danger" id="cancel-order">Hủy đơn đang chờ</button> ' : '') +
           `<a class="button secondary" href="${S.page("order-history")}">← Tất cả đơn hàng</a>`;
+        if (data.status === 'completed') {
+          const reviews = await import(S.url('frontend/assets/js/reviews.js'));
+          const seen = new Set();
+          for (const item of data.items) {
+            if (seen.has(item.product_id)) continue;
+            seen.add(item.product_id);
+            const section = document.createElement('section'); section.className = 'panel product-reviews';
+            content.append(section);
+            reviews.mountReviews(section, item.product_id, item.name || item.product_name);
+          }
+        }
         document.querySelector('#cancel-order')?.addEventListener('click', async event => {
           if (!confirm('Hủy đơn đang chờ xác nhận?')) return;
           const button = event.currentTarget; button.disabled = true;
@@ -402,18 +418,22 @@ root.querySelectorAll("[data-gallery-index]").forEach((button) => {
       }
     }
     if (view === "profile") {
+      await Auth.currentUser();
       const { data } = await S.api("me.php");
       const form = document.querySelector("#profile-form");
       form.elements.name.value = data.name || "";
       form.elements.email.value = data.email || "";
       form.elements.phone.value = data.phone || "";
       form.elements.address.value = data.address || "";
+      form.querySelector('button').disabled = false;
       const clearProfileErrors = () => {
         form.querySelectorAll(".field--invalid").forEach((el) => el.classList.remove("field--invalid"));
         form.querySelectorAll("[data-error-for]").forEach((el) => { el.textContent = ""; });
       };
       form.addEventListener("submit", async (ev) => {
         ev.preventDefault();
+        if (form.querySelector('button').disabled) return;
+        document.querySelector('#profile-status').textContent = '';
         clearProfileErrors();
         const name = form.elements.name.value.trim();
         const phoneRaw = form.elements.phone.value.trim();
@@ -434,6 +454,8 @@ root.querySelectorAll("[data-gallery-index]").forEach((button) => {
         }
         const button = form.querySelector("button");
         button.disabled = true;
+        const editable = [...form.querySelectorAll('input:not([readonly])')];
+        editable.forEach(input => { input.disabled = true; });
         button.textContent = "Đang lưu…";
         try {
           const saved = await S.api("me.php", {
@@ -442,7 +464,9 @@ root.querySelectorAll("[data-gallery-index]").forEach((button) => {
           });
           form.elements.phone.value = saved.data.phone || "";
           form.elements.address.value = saved.data.address || "";
-          await Auth.mountHeader();
+          form.elements.name.value = saved.data.name;
+          document.querySelector("#profile-status").textContent = "Đã lưu. Thông tin này sẽ được dùng khi đặt hàng.";
+          Auth.mountHeader();
           S.toast("Đã cập nhật thông tin.");
         } catch (err) {
           const fieldErrors = err.payload?.data?.errors || {};
@@ -455,6 +479,7 @@ root.querySelectorAll("[data-gallery-index]").forEach((button) => {
           if (err.status === 401) S.login();
           else S.toast(err.message, true);
         } finally {
+          editable.forEach(input => { input.disabled = false; });
           button.disabled = false;
           button.textContent = "Lưu thông tin";
         }

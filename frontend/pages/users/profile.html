@@ -23,7 +23,7 @@
       <div class="narrow">
         <span class="eyebrow">TÀI KHOẢN CỦA BẠN</span>
         <h1>Thông tin cá nhân</h1>
-        <form class="panel" id="profile-form">
+        <form class="panel" id="profile-form" novalidate>
           <label class="field"
             >Họ và tên<input
               name="name"
@@ -37,22 +37,6 @@
           >          <label class="field"
             >Email đăng nhập<input name="email" type="email" readonly
           /></label>
-          <label class="field"
-            >Số điện thoại<input
-              name="phone"
-              type="tel"
-              autocomplete="tel"
-              maxlength="30"
-          /></label>
-          <label class="field"
-            >Địa chỉ nhận hàng mặc định<input
-              name="address"
-              autocomplete="street-address"
-              maxlength="255"
-          /></label>
-          <p class="subtle">
-            Email dùng để đăng nhập và được giữ cố định trong bản demo.
-          </p>
           <label class="field"
             >Số điện thoại<input
               name="phone"
@@ -76,7 +60,7 @@
             sửa riêng cho từng đơn mà không đổi hồ sơ.
           </p>
           <div id="profile-status" role="status"></div>
-          <button class="button">Lưu thông tin</button>
+          <button class="button" disabled>Lưu thông tin</button>
           <a class="button secondary" href="order-history.html">Xem đơn hàng</a>
         </form>
       </div>

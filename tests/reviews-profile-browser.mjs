@@ -1,0 +1,68 @@
+import assert from 'node:assert/strict';
+import {chromium} from '../.local-test/node_modules/playwright/index.mjs';
+const base = process.env.TEST_URL || 'http://localhost:8013';
+const browser = await chromium.launch({headless:true,...(process.env.CHROME_PATH ? {executablePath:process.env.CHROME_PATH} : {})});
+const context = await browser.newContext({viewport:{width:1280,height:900}}), page = await context.newPage();
+page.setDefaultTimeout(15000);
+const errors = []; page.on('pageerror',error=>errors.push(error.message));
+let checks=0;
+function check(value,message) { assert.ok(value,message); checks++; }
+async function call(path,method='GET',data) {
+  const token = (await (await context.request.get(base+'/backend/api/csrf.php')).json()).data.csrf_token;
+  const r=await context.request.fetch(base+'/backend/api/'+path,{method,headers:{'X-CSRF-Token':token},...(data ? {data} : {})});
+  assert.ok(r.ok(),path+': '+await r.text()); return (await r.json()).data;
+}
+try {
+  await call('login.php','POST',{phone:'0916222222'});
+  await page.goto(base+'/frontend/pages/users/profile.html');
+  await page.waitForFunction(()=>document.querySelector('[name=name]').value.length>0);
+  check(await page.locator('[name=phone]').count()===1 && await page.locator('[name=address]').count()===1,'Single profile fields');
+  await page.locator('[name=name]').fill('Khách Browser');
+  await page.locator('[name=phone]').fill('bad phone');
+  await page.locator('#profile-form button').click();
+  check((await page.locator('[data-error-for=phone]').textContent()).length>0,'Phone validation UI');
+  await page.locator('[name=phone]').fill('+84 912 345 678');
+  await page.locator('[name=address]').fill('456 Nguyễn Huệ, TP.HCM');
+  await page.locator('#profile-form button').click();
+  await page.locator('#profile-status').filter({hasText:'Đã lưu'}).waitFor();
+  await page.reload();
+  await page.waitForFunction(()=>document.querySelector('[name=phone]').value==='0912345678');
+  check(await page.locator('[name=address]').inputValue()==='456 Nguyễn Huệ, TP.HCM','Profile survives reload');
+  const orders = await call('orders.php');
+  const completed = orders.items.find(o=>o.status==='completed'); assert.ok(completed,'Run reviews-profile-api first');
+  const order = await call('orders.php?id='+completed.id), id=order.items[0].product_id;
+  await call('cart.php','POST',{product_id:id,quantity:1});
+  await page.goto(base+'/frontend/pages/cart.html');
+  await page.locator('#saved-delivery').waitFor();
+  check(await page.locator('#delivery-fields').isHidden(),'Saved address shown without asking for entry');
+  check((await page.locator('#saved-delivery-text').textContent()).includes('456 Nguyễn Huệ'),'Correct saved address');
+  await page.locator('#edit-delivery').click();
+  await page.locator('[name=address]').fill('789 Địa chỉ riêng cho đơn');
+  await page.locator('#btn-order').click();
+  await page.waitForURL('**/order-history.html?id=*&placed=1');
+  check((await call('me.php')).address==='456 Nguyễn Huệ, TP.HCM','Manual order address leaves profile unchanged');
+  await call('cart.php','POST',{product_id:id,quantity:1});
+  await page.goto(base+'/frontend/pages/cart.html');
+  await page.locator('#saved-delivery').waitFor();
+  await page.locator('#btn-order').click();
+  await page.waitForURL('**/order-history.html?id=*&placed=1');
+  const placed=await call('orders.php?id='+new URL(page.url()).searchParams.get('id'));
+  check(placed.address==='456 Nguyễn Huệ, TP.HCM','Direct checkout uses saved profile');
+  await page.goto(base+'/frontend/pages/users/order-history.html?id='+completed.id);
+  await page.locator('.review-form').first().waitFor();
+  check(await page.locator('.review-form').count()>0,'Completed order review form');
+  await page.locator('.review-form input[value="5"]').first().check();
+  await page.locator('.review-form textarea').first().fill('Hài lòng <img src=x onerror=alert(1)>');
+  await page.locator('.review-form button').first().click();
+  await page.locator('.review-status').filter({hasText:'Đã lưu đánh giá'}).first().waitFor();
+  await page.goto(base+'/frontend/pages/users/product-detail.html?id='+id);
+  await page.locator('.review-list .review-item').first().waitFor();
+  check((await page.locator('#product-detail [data-product-rating]').textContent()).includes('/5'),'Stars below product title');
+  check(await page.locator('.review-feedback img').count()===0,'Feedback HTML escaped');
+  check((await page.locator('.review-feedback').allTextContents()).some(t=>t.includes('<img')),'Feedback literal rendered');
+  await page.setViewportSize({width:390,height:844});
+  await page.screenshot({path:'.local-test/reviews-mobile.png',fullPage:true});
+  check(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'Mobile fits viewport');
+  check(errors.length===0,'No JS errors: '+errors.join('; '));
+  console.log(`PASS: ${checks} browser assertions.`);
+} finally { await browser.close(); }

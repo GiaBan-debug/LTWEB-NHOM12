@@ -135,9 +135,13 @@ $env:AUTH_MODE='legacy'
 ```cmd
 node tests/demo-api.mjs
 node tests/demo-browser.mjs
+node tests/reviews-profile-api.mjs
+node tests/reviews-profile-browser.mjs
 ```
 
 Test mặc định dùng `http://localhost:8013`. Có thể đặt `TEST_URL` để đổi server và `CHROME_PATH` để dùng Chromium có sẵn. Không cần Node/Playwright trên hosting.
+
+Hai bài test reviews/profile chạy theo thứ tự API rồi browser, trên database thử riêng ở trên. Khách mua sản phẩm có thể đánh giá 1–5 sao kèm nhận xét sau khi Admin chuyển đơn sang **Hoàn thành**; vào chi tiết đơn hoặc chi tiết sản phẩm để gửi/sửa đánh giá. Sao trung bình xuất hiện dưới tên sản phẩm. Thông tin liên hệ đã lưu trong hồ sơ sẽ được dùng lại ở checkout, có nút “Thay đổi” nếu muốn dùng địa chỉ khác cho đơn.
 
 ## Cấu trúc
 

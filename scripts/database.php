@@ -4,6 +4,7 @@ if (PHP_SAPI !== 'cli') { http_response_code(404); exit; }
 require_once __DIR__ . '/../backend/config/database.php';
 function migrateDatabase(PDO $db): void
 {
+    $db->exec(file_get_contents(__DIR__ . '/../database/migration-reviews.sql'));
     // Inspect before each ALTER: safe to rerun on original/demo/current schemas.
     $columns = array_column($db->query('SHOW FULL COLUMNS FROM users')->fetchAll(PDO::FETCH_ASSOC), null, 'Field');
     $additions = [

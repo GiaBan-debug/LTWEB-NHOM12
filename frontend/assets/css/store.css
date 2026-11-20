@@ -1345,3 +1345,8 @@ td img { width: 46px; height: 46px; object-fit: contain; border-radius: 8px; }
     padding: 18px;
   }
 }
+/* Purchase reviews and saved checkout delivery. */
+.product-rating{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:8px 0;color:#596579;font-size:14px}
+.rating-stars{position:relative;display:inline-block;color:#d0d5de;letter-spacing:2px;white-space:nowrap;font-size:19px;line-height:1.4}
+.rating-stars>span{position:absolute;inset:0 auto 0 0;overflow:hidden;color:#e6a000}
+.product-reviews{margin:24px 0}.review-form{margin:18px 0;max-width:680px}.review-form fieldset{border:0;padding:0;margin:12px 0}.review-options{display:flex;gap:16px;flex-wrap:wrap}.review-options label{cursor:pointer}.review-options input{width:auto}.review-item{padding:18px 0;border-top:1px solid #e4e8ee}.review-item small{display:block;color:#667085}.review-score{color:#b47b00;margin-left:10px}.review-feedback{white-space:pre-wrap;overflow-wrap:anywhere}.review-status{min-height:1.5em}#saved-delivery{margin-bottom:18px}#saved-delivery-text{white-space:pre-wrap;overflow-wrap:anywhere}

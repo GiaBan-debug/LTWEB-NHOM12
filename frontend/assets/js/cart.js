@@ -33,6 +33,7 @@
 
   let cart = null;
   let busy = false;
+  let profileLoading = true, useSavedProfile = false;
 
   // ---- Tiện ích ----
   const formatVND = (n) => new Intl.NumberFormat("vi-VN").format(n) + " ₫";
@@ -179,7 +180,7 @@
     els.sumSubtotal.textContent = formatVND(subtotal);
     els.sumShipping.textContent = formatVND(shipping);
     els.sumTotal.textContent = formatVND(payable);
-    els.btnOrder.disabled = !data.can_checkout;
+    els.btnOrder.disabled = profileLoading || busy || !data.can_checkout;
     els.btnOrder.title = data.can_checkout
       ? ""
       : "Một số sản phẩm vượt tồn kho — hãy giảm số lượng hoặc xoá.";
@@ -210,6 +211,7 @@
       await load(); // đồng bộ lại với server (trả ô số lượng về giá trị đúng)
     } finally {
       busy = false;
+      if (cart) render(cart);
     }
   }
 
@@ -289,26 +291,41 @@
     return errors;
   }
 
-  let profileApplied = false;
+  function editDelivery() {
+    useSavedProfile = false;
+    document.querySelector('#saved-delivery').hidden = true;
+    document.querySelector('#delivery-fields').hidden = false;
+  }
+  document.querySelector('#edit-delivery').addEventListener('click', () => {
+    editDelivery(); els.form.elements.receiver_name.focus();
+  });
   async function fillFromProfile() {
-    if (profileApplied || !window.Shop) return;
-    profileApplied = true;
+    profileLoading = true;
+    els.btnOrder.disabled = true;
     try {
-      const { data } = await Shop.api("me.php");
+      const {data} = await Shop.api('me.php');
       const fields = els.form.elements;
-      if (!fields.receiver_name.value.trim()) fields.receiver_name.value = data.name || "";
-      if (!fields.phone.value.trim()) fields.phone.value = data.phone || "";
-      if (!fields.address.value.trim()) fields.address.value = data.address || "";
-    } catch (e) {
-      profileApplied = false;
-      if (e.status === 401) Shop.login();
+      fields.receiver_name.value = data.name || '';
+      fields.phone.value = data.phone || '';
+      fields.address.value = data.address || '';
+      useSavedProfile = data.name?.trim().length >= 2 && !!Shop.normalizePhone(data.phone) && data.address?.trim().length >= 5;
+      document.querySelector('#saved-delivery').hidden = !useSavedProfile;
+      document.querySelector('#delivery-fields').hidden = useSavedProfile;
+      document.querySelector('#saved-delivery-text').textContent = [data.name, data.phone, data.address].filter(Boolean).join(' · ');
+    } catch (error) {
+      editDelivery();
+      if (error.status === 401) Shop.login();
+      else showAlert('Chưa tải được hồ sơ. Bạn có thể nhập thông tin giao hàng bên dưới.');
+    } finally {
+      profileLoading = false;
+      if (cart) render(cart);
     }
   }
 
   let checkoutKey = crypto.randomUUID ? crypto.randomUUID() : Array.from(crypto.getRandomValues(new Uint8Array(16)), x => x.toString(16).padStart(2, "0")).join("");
   els.form.addEventListener("submit", async (ev) => {
     ev.preventDefault();
-    if (busy || !cart || !cart.can_checkout) return;
+    if (busy || profileLoading || !cart || !cart.can_checkout) return;
     hideAlert();
     clearFieldErrors();
 
@@ -319,9 +336,11 @@
       address: String(fd.get("address")).trim(),
       note: String(fd.get("note")).trim(),
       checkout_key: checkoutKey,
+      use_profile: !!useSavedProfile,
     };
     const errors = validateForm(values);
     if (Object.keys(errors).length) {
+      editDelivery();
       Object.entries(errors).forEach(([k, v]) => setFieldError(k, v));
       els.form.querySelector(".field--invalid input")?.focus();
       return;
@@ -336,12 +355,13 @@
     } catch (e) {
       const p = e.payload || {};
       const fieldErrors = p.errors || p.data?.errors || {};
+      if (e.status === 422 || Object.keys(fieldErrors).length) editDelivery();
       Object.entries(fieldErrors).forEach(([k, v]) => setFieldError(k, v));
       const list = Array.isArray(p.items)
         ? p.items.map((i) => `${i.name}: cần ${i.requested}, còn ${i.stock}`)
         : [];
       showAlert(e.message, { list });
-      if (p.code === 'EMAIL_NOT_VERIFIED') {
+      if ((p.code || p.data?.code) === 'EMAIL_NOT_VERIFIED') {
         const link = document.createElement('a'); link.href = Shop.url('frontend/pages/verify-email.html'); link.textContent = ' Mở trang xác minh email';
         els.alert.append(link);
       }
@@ -351,5 +371,9 @@
     }
   });
 
+  window.addEventListener('pageshow', event => { if (event.persisted) location.reload(); });
+  window.addEventListener('focus', () => {
+    if (useSavedProfile && !busy && !profileLoading) fillFromProfile();
+  });
   load().then((ok) => { if (ok) fillFromProfile(); });
 })();

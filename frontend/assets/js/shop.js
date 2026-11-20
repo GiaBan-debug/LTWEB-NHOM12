@@ -204,6 +204,11 @@
   }
 
   /* ---- Product card ---- */
+  function ratingSummary(p) {
+    const count = Math.max(0, Number(p.rating_count) || 0);
+    const rating = Math.max(0, Math.min(5, Number(p.rating_average) || 0));
+    return '<div class="product-rating" data-product-rating="' + Number(p.id) + '" aria-label="' + rating + ' trên 5 sao, ' + count + ' đánh giá"><span class="rating-stars" aria-hidden="true">★★★★★<span style="width:' + (rating * 20) + '%">★★★★★</span></span><small>' + (count ? rating.toFixed(1) + '/5 (' + count + ' đánh giá)' : 'Chưa có đánh giá') + '</small></div>';
+  }
   function productCard(p) {
     const inStock = p.stock > 0;
     return `
@@ -214,6 +219,7 @@
   <div class="product-copy">
     <span class="eyebrow">${escape(p.category_name)}</span>
     <h3><a href="${page("product-detail", "?id=" + p.id)}">${escape(p.name)}</a></h3>
+    ${ratingSummary(p)}
     <div class="product-bottom">
   <div class="product-price-info">
     <strong class="price">${money(p.price)}</strong>
@@ -418,6 +424,7 @@
     login,
     categoryCard,
     productCard,
+    ratingSummary,
     pagination,
     toast,
     updateCartCount,

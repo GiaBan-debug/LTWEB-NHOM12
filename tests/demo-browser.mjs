@@ -57,6 +57,8 @@ try {
   await check(() => page.locator('.qty input').inputValue().then(n => n === '2'),'Cart quantity');
   await page.locator('[data-action=dec]').click();
   await page.waitForFunction(() => document.querySelector('.qty input').value === '1');
+  await page.waitForFunction(() => !document.querySelector('#btn-order').disabled);
+  if (await page.locator('#saved-delivery').isVisible()) await page.locator('#edit-delivery').click();
   await page.locator('[name=receiver_name]').fill('Khách mua hàng demo');
   await page.locator('[name=phone]').fill('0912345678');
   await page.locator('[name=address]').fill('123 Nguyễn Văn Cừ, TP.HCM');
@@ -93,7 +95,7 @@ try {
   await page.goto(base + '/frontend/pages/admin/order-detail.html?id=' + orderId);
   await page.locator('[data-status=processing]').click();
   await page.locator('[data-status=shipped]').waitFor();
-  await check(() => page.locator('#admin-content .status').textContent().then(t => t.includes('Đang chuẩn bị')),'Admin updates order');
+  await check(() => page.locator('#admin-content article .status').first().textContent().then(t => t.includes('Đang chuẩn bị')),'Admin updates order');
   for (const width of [390,768,1440]) {
     await page.setViewportSize({width,height:900});
     for (const path of ['index.html','pages/users/products.html','pages/cart.html','pages/users/order-history.html','pages/admin/products.html']) {
