@@ -1,6 +1,6 @@
 # API bản demo
 
-> Cập nhật TV5: mặc định Firebase Google Auth. Đọc `TV5_FIREBASE.md`; login/register bằng mật khẩu PHP chỉ hoạt động trong AUTH_MODE=legacy. Thêm GET auth-config.php và POST firebase-session.php với body id_token + CSRF.
+> Cập nhật TV5: mặc định Firebase Google Auth. Đọc `TV5_FIREBASE.md`; AUTH_MODE=legacy chỉ dùng thử với SĐT 0916111111 (admin), 0916222222 (user), không cần mật khẩu/OTP. Firebase mode chặn endpoint đăng nhập thử. Thêm GET auth-config.php và POST firebase-session.php với body id_token + CSRF.
 
 Gốc URL: `backend/api/` tương đối với thư mục dự án. Không viết cứng localhost hoặc tên thư mục máy cá nhân trong frontend.
 
@@ -15,7 +15,7 @@ Frontend và backend chạy cùng origin, gửi cookie session trong mọi reque
 | csrf.php | GET | Trả csrf_token | Công khai |
 | health.php | GET | Kiểm tra kết nối database | Công khai |
 | register.php | POST | name, email, password (6–72 byte) | Công khai + CSRF |
-| login.php | POST | email, password | Công khai + CSRF |
+| login.php | POST | phone: 0916111111 hoặc 0916222222 | Chỉ AUTH_MODE=legacy + CSRF; trả user/session |
 | logout.php | POST | Không cần body | CSRF |
 | me.php | GET | Thông tin session; không trả password | Đăng nhập |
 | me.php | PUT | name, phone, address; không sửa role/UID/email | Đăng nhập + CSRF |

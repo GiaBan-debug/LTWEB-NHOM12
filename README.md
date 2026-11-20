@@ -1,6 +1,6 @@
 # Nhóm 12 Store — PHP/MySQL demo
 
-> **Cập nhật TV5 (18/11/2026):** mặc định dùng Firebase **Google sign-in** của project `bta-store`. Xem [hướng dẫn TV5](docs/TV5_FIREBASE.md) để chạy, cấp admin, migration và test. Các tài khoản mật khẩu seed trong bảng bên dưới chỉ áp dụng khi đặt `AUTH_MODE=legacy`; không dùng để đăng nhập Google.
+> **Cập nhật TV5 (20/11/2026):** mặc định dùng Firebase **Google sign-in** của project `bta-store`. Trong `AUTH_MODE=legacy`, nhập **0916111111** (admin) hoặc **0916222222** (user), không cần mật khẩu/OTP. Đây là hai danh tính thử riêng; các tài khoản email/mật khẩu seed bên dưới được giữ làm dữ liệu cũ, không dùng để đăng nhập nữa. Xem [hướng dẫn TV5](docs/TV5_FIREBASE.md).
 
 Website bán điện thoại, laptop, tablet và phụ kiện, dành cho đồ án/portfolio. Có dữ liệu MySQL thật, mua hàng COD và quản trị; chưa tích hợp thanh toán hoặc vận chuyển thực tế.
 
@@ -13,7 +13,7 @@ Máy clone mới cần chạy `powershell -ExecutionPolicy Bypass -File scripts/
 Mở **CMD hoặc terminal VS Code**, tại thư mục dự án chạy:
 
 ```cmd
-run-demo.cmd
+run-demo.bat
 ```
 
 Mở **http://localhost:8000/**. Giữ terminal mở; nhấn Ctrl+C để dừng. Script bật driver PHP cần thiết, khởi động database cổng 3307, tạo database riêng `ltweb_nhom12_demo` nếu chưa có và giữ lại dữ liệu giữa các lần chạy. Không xóa/reset database đang có.
@@ -21,7 +21,7 @@ Mở **http://localhost:8000/**. Giữ terminal mở; nhấn Ctrl+C để dừng
 Nếu cổng 8000 đang được server cũ sử dụng:
 
 ```cmd
-run-demo.cmd -Port 8012
+run-demo.bat -Port 8012
 ```
 
 Nếu clone trên máy khác và chưa có MariaDB portable, chạy một lần:
@@ -35,7 +35,7 @@ Script tải MariaDB 11.4.5 portable (~90 MB) từ archive chính thức vào `.
 Nếu PHP nằm chỗ khác:
 
 ```cmd
-run-demo.cmd -PhpPath "D:\xampp\php\php.exe"
+run-demo.bat -PhpPath "D:\xampp\php\php.exe"
 ```
 
 ## Tài khoản demo & Xác thực Firebase
@@ -47,7 +47,7 @@ run-demo.cmd -PhpPath "D:\xampp\php\php.exe"
 | Khách hàng 2 | user2@ltweb.com | 123456 | NULL | Đã có 2 đơn hàng (hoàn thành, đã hủy) |
 
 Chọn cơ chế bằng `AUTH_MODE`:
-1. **`legacy` (kiểm thử local):** Email/mật khẩu bcrypt qua `backend/api/login.php`, dùng tài khoản seed ở bảng trên.
+1. **`legacy` (chỉ kiểm thử):** nhập SĐT 0916111111 (admin) hoặc 0916222222 (user). Backend tạo hai user thử riêng ở lần đầu, giữ cùng ID/giỏ/đơn cho các lần sau. Không xác minh quyền sở hữu SĐT, không dùng chế độ này khi triển khai thật.
 2. **`firebase` (mặc định):** đăng nhập Google qua Firebase Web SDK, gửi **ID token có chữ ký** tới `backend/api/firebase-session.php`. Route tương thích `firebase-auth.php` cũng xác minh đầy đủ; không chấp nhận UID do client tự gửi. Email/Password Firebase hiện chưa bật.
 
 UID trong dữ liệu seed để `NULL`; các chuỗi UID demo không phải tài khoản Firebase. Xem `docs/TV5_FIREBASE.md` để liên kết tài khoản cũ có kiểm soát, giữ lịch sử và cấp quyền admin.
@@ -102,7 +102,7 @@ npm install --prefix .local-test --no-audit --no-fund playwright@1.65.1
 node .local-test/node_modules/playwright/cli.js install chromium
 ```
 
-Khởi động MariaDB portable bằng `run-demo.cmd`, sau đó mở terminal **PowerShell khác** để tạo DB test và chạy PHP server test:
+Khởi động MariaDB portable bằng `run-demo.bat`, sau đó mở terminal **PowerShell khác** để tạo DB test và chạy PHP server test:
 
 ```powershell
 $env:DB_PORT='3307'

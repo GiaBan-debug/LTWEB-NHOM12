@@ -13,7 +13,7 @@ async function client(url = baseURL) {
 }
 const a = await client(), b = await client(), admin = await client(), firebase = await client('http://localhost:8014');
 try {
-  for (const [c,email] of [[a,'user1@ltweb.com'],[b,'user2@ltweb.com'],[admin,'admin@ltweb.com']]) await c.call('login.php','POST',{email,password:'123456'});
+  for (const [c,phone] of [[a,'0916222222'],[b,'0916111111'],[admin,'0916111111']]) await c.call('login.php','POST',{phone});
   const profile = await a.call('me.php','PUT',{name:'Khách API TV5',phone:'+84 912-345-678',address:'123 Nguyễn Văn Cừ, TP.HCM'});
   check(profile.data.phone === '0912345678' && profile.data.address.includes('TP.HCM'),'Normalized profile and address');
   await a.call('me.php','PUT',{name:'Khách API TV5',phone:'wrong'},422);
@@ -48,7 +48,7 @@ try {
   await admin.call('admin.php?resource=products&id='+id,'DELETE');
   const config=(await firebase.call('auth-config.php')).data;
   check(config.mode === 'firebase' && config.firebase.projectId === 'bta-store' && config.providers.google,'Real project Google config');
-  await firebase.call('login.php','POST',{email:'admin@ltweb.com',password:'123456'},410);
+  await firebase.call('login.php','POST',{phone:'0916111111'},410);
   await firebase.call('register.php','POST',{name:'No fallback',email:'no@example.test',password:'123456'},410);
   await firebase.call('firebase-session.php','POST',{uid:'admin',email:'admin@ltweb.com',role:'admin'},422);
   await firebase.call('firebase-session.php','POST',{id_token:'bad'},401);

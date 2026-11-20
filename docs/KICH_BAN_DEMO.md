@@ -12,7 +12,7 @@ Mục tiêu: Đạt điểm tối đa đồ án với luồng hoạt động mư
 
 ### Môi trường chạy
 - **Local:** PHP CLI 8.2+ kết nối MariaDB/MySQL port 3307 (`ltweb_nhom12_demo`).
-- **Lệnh khởi động nhanh:** `run-demo.cmd` (truy cập `http://localhost:8000/`).
+- **Lệnh khởi động nhanh:** `run-demo.bat` (truy cập `http://localhost:8000/`).
 
 ### Danh sách tài khoản demo
 | Vai trò | Email đăng nhập | Mật khẩu | Firebase UID (seed) | Quyền hạn |
@@ -25,7 +25,7 @@ Mục tiêu: Đạt điểm tối đa đồ án với luồng hoạt động mư
 
 ## 2. Checklist Chuẩn Bị Trước Giờ G (5 Phút Trước Báo Cáo)
 
-- [ ] **1. Môi trường:** Khởi động server bằng lệnh `run-demo.cmd` và xác nhận terminal không báo lỗi.
+- [ ] **1. Môi trường:** Khởi động server bằng lệnh `run-demo.bat` và xác nhận terminal không báo lỗi.
 - [ ] **2. Kiểm tra Health:** Mở trình duyệt vào `http://localhost:8000/backend/api/health.php` nhận được `{"success":true,"message":"Database connected."}`.
 - [ ] **3. Trình duyệt:** Mở sẵn 2 cửa sổ/tab ẩn danh:
   - Tab 1: Khách hàng mua sắm (`http://localhost:8000/frontend/index.html`).

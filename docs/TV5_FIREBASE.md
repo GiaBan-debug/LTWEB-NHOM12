@@ -1,5 +1,11 @@
 # TV5 — Firebase và backend BTA Store
 
+## Đăng nhập thử bằng SĐT (20/11/2026)
+
+Mặc định dùng Firebase Google; form SĐT chưa gửi SMS hoặc tạo tài khoản. Để thử local, đặt `AUTH_MODE=legacy` trong `.env`, khởi động lại PHP bằng `run-demo.bat` rồi đăng nhập `0916111111` (admin) hoặc `0916222222` (user), không cần mật khẩu/OTP. Biến môi trường của terminal ưu tiên hơn `.env`.
+
+Backend chỉ nhận hai số trên và tạo/tái sử dụng hai user thử riêng (`legacy-admin@demo.invalid`, `legacy-user@demo.invalid`), giữ giỏ và lịch sử. Không thay quyền, UID hay dữ liệu tài khoản Google/seed cũ. Không dùng chế độ này khi triển khai thật. Đặt lại `AUTH_MODE=firebase` để dùng Google; chế độ Firebase chặn đăng nhập thử bằng HTTP 410.
+
 Trạng thái triển khai: 18/11/2026. Firebase project đã được người dùng cung cấp là **bta-store**; Google là phương thức ưu tiên. Không sử dụng project super-calendar cũ.
 
 ## Chạy ngay trên máy hiện tại
@@ -7,10 +13,10 @@ Trạng thái triển khai: 18/11/2026. Firebase project đã được người 
 Thư viện Composer và MariaDB portable đã có trong workspace này. Mở CMD tại gốc dự án:
 
 ```cmd
-run-demo.cmd
+run-demo.bat
 ```
 
-Nếu cổng 8000 đang dùng: `run-demo.cmd -Port 8012`. Mở `http://localhost:8000/` (hoặc cổng đã chọn), vào Đăng nhập → **Đăng nhập bằng Google**. Chọn tài khoản trực tiếp trong popup Google. Website tự tạo hồ sơ MySQL với quyền user khi UID mới đăng nhập lần đầu.
+Nếu cổng 8000 đang dùng: `run-demo.bat -Port 8012`. Mở `http://localhost:8000/` (hoặc cổng đã chọn), vào Đăng nhập → **Đăng nhập bằng Google**. Chọn tài khoản trực tiếp trong popup Google. Website tự tạo hồ sơ MySQL với quyền user khi UID mới đăng nhập lần đầu.
 
 Google đã được người dùng xác nhận bật và thêm localhost vào Authorized domains. Nếu chạy trên domain khác, thêm đúng domain vào Firebase Authentication → Settings → Authorized domains. Không nhập protocol hoặc port trong danh sách domain. Máy cần có mạng để dùng SDK và Google OAuth.
 
@@ -19,7 +25,7 @@ Trên máy clone mới, chạy lần lượt:
 ```cmd
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts\setup-local.ps1
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts\install-dependencies.ps1
-run-demo.cmd
+run-demo.bat
 ```
 
 Script start-demo tự bổ sung các cột còn thiếu vào database demo, không reset giỏ/đơn/role/mật khẩu cũ. Với DB khác hoặc hosting, sao lưu trước rồi chạy migration theo phần bên dưới.
@@ -65,7 +71,7 @@ Nếu sau này muốn dùng thêm email/mật khẩu:
 
 Mặc định chỉ cho checkout khi Firebase email_verified=true; Google thường cung cấp email đã xác minh. Trang `frontend/pages/verify-email.html` dùng để gửi lại và cập nhật trạng thái. Khi dùng Google, mật khẩu được quản lý tại Google; không dùng form khôi phục mật khẩu Firebase cho tài khoản Google-only.
 
-`AUTH_MODE=legacy` là chế độ riêng để hồi quy bản PHP cũ. Firebase mode trả HTTP 410 ở login.php/register.php cũ, không tự fallback sang mật khẩu MySQL khi Firebase lỗi. Legacy mode không cho đăng nhập bằng mật khẩu vào user đã được bind UID.
+`AUTH_MODE=legacy` chỉ dùng thử bằng hai SĐT cố định nêu trên. Firebase mode trả HTTP 410 ở login.php/register.php cũ, không tự fallback khi Firebase lỗi. Đăng nhập legacy không nhận email/mật khẩu và không truy cập tài khoản đã bind UID.
 
 ## Tài khoản cũ và dữ liệu
 

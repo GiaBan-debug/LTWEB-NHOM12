@@ -173,7 +173,7 @@
         if (fields) fields.hidden = !emailEnabled;
         const forgot = document.querySelector("#forgot-password-link");
         if (forgot) forgot.hidden = !emailEnabled;
-        if (!emailEnabled)
+        if (!emailEnabled && !document.querySelector('#phone-fields'))
           document.querySelector(".auth-lead").textContent =
             "Tiếp tục bằng tài khoản Google. Lần đầu đăng nhập sẽ tự tạo tài khoản mua hàng.";
         if (c.mode === "firebase") await client();
@@ -222,10 +222,10 @@
         if (fb && created) await fb.signOut(fb.auth);
       }
     },
-    async login({ email, password }) {
+    async login({ phone, email, password }) {
       loggingOut = false;
       if ((await config()).mode !== "firebase") {
-        const result = await request("POST", "login.php", { email, password });
+        const result = await request("POST", "login.php", { phone });
         writeCache(result.data);
         return result.data;
       }

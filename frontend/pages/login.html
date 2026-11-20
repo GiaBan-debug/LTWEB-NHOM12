@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="vi">
   <head>
     <meta charset="utf-8" />
@@ -13,8 +13,8 @@
     <main class="auth-page">
       <form id="login-form" class="auth-card" novalidate>
         <h1>Đăng nhập</h1>
-        <p class="auth-lead">Dùng email và mật khẩu đã đăng ký.</p>
-        <div id="auth-status" class="auth-status" hidden></div>
+        <p class="auth-lead">Đăng nhập bằng số điện thoại và mã OTP hoặc tiếp tục bằng Google.</p>
+        <div id="auth-status" class="auth-status" role="status" aria-live="polite" hidden></div>
         <button
           id="btn-google"
           class="button secondary"
@@ -24,30 +24,19 @@
           Đăng nhập bằng Google
         </button>
         <fieldset
-          id="email-password-fields"
+          id="phone-fields"
           style="border: 0; margin: 0; padding: 0"
         >
           <label class="auth-field"
-            >Email
+            >Số điện thoại
             <input
-              id="email"
-              name="email"
-              type="email"
-              autocomplete="email"
+              id="phone"
+              name="phone"
+              type="tel"
+              autocomplete="tel" inputmode="tel" maxlength="25" placeholder="0912 345 678"
               required
             />
-            <small class="field-error" data-error-for="email"></small>
-          </label>
-          <label class="auth-field"
-            >Mật khẩu
-            <input
-              id="password"
-              name="password"
-              type="password"
-              autocomplete="current-password"
-              required
-            />
-            <small class="field-error" data-error-for="password"></small>
+            <small class="field-error" data-error-for="phone"></small>
           </label>
           <button id="btn-submit" class="btn-auth" type="submit">
             Đăng nhập
@@ -56,91 +45,12 @@
         <p class="auth-alt">
           Chưa có tài khoản? <a href="register.html">Đăng ký</a>
         </p>
-        <p class="auth-alt" id="forgot-password-link">
-          <a href="forgot-password.html">Quên mật khẩu?</a>
-        </p>
       </form>
     </main>
     <footer class="site-footer" data-site-footer></footer>
     <script src="../assets/js/shop.js"></script>
     <script src="../assets/js/auth.js"></script>
     <script src="../assets/js/main.js"></script>
-    <script>
-      document.addEventListener("DOMContentLoaded", async () => {
-        const form = document.getElementById("login-form");
-        const statusEl = document.getElementById("auth-status");
-        const btn = document.getElementById("btn-submit");
-        const params = new URLSearchParams(location.search);
-        const googleButton = document.querySelector("#btn-google");
-        googleButton.addEventListener("click", async () => {
-          googleButton.disabled = true;
-          try {
-            await Auth.googleLogin();
-            location.href = Auth.safeRedirect(params.get("redirect"));
-          } catch (error) {
-            Auth.setStatus(statusEl, error.message, "error");
-            googleButton.disabled = false;
-          }
-        });
-        Auth.setupAuthPage(googleButton, statusEl);
-        let user;
-        try {
-          user = await Auth.currentUser();
-        } catch (error) {
-          Auth.setStatus(statusEl, error.message, "error");
-        }
-        const notice = sessionStorage.getItem("auth_registration_notice");
-        if (notice) {
-          Auth.setStatus(statusEl, notice, "ok");
-          sessionStorage.removeItem("auth_registration_notice");
-        }
-        if (user) {
-          location.replace(
-            Auth.safeRedirect(params.get("redirect")) || Auth.homeHref,
-          );
-          return;
-        }
-
-        form.addEventListener("submit", async (ev) => {
-          ev.preventDefault();
-          form
-            .querySelectorAll(".is-invalid")
-            .forEach((n) => n.classList.remove("is-invalid"));
-          form.querySelectorAll(".field-error").forEach((n) => {
-            n.textContent = "";
-          });
-          Auth.setStatus(statusEl, "");
-
-          const email = String(form.email.value).trim();
-          const password = String(form.password.value);
-          let invalid = false;
-          if (!Auth.emailRe.test(email)) {
-            form.email.closest(".auth-field").classList.add("is-invalid");
-            form.querySelector('[data-error-for="email"]').textContent =
-              "Email không hợp lệ.";
-            invalid = true;
-          }
-          if (!password) {
-            form.password.closest(".auth-field").classList.add("is-invalid");
-            form.querySelector('[data-error-for="password"]').textContent =
-              "Vui lòng nhập mật khẩu.";
-            invalid = true;
-          }
-          if (invalid) return;
-
-          btn.disabled = true;
-          btn.textContent = "Đang đăng nhập…";
-          try {
-            await Auth.login({ email, password });
-            location.href =
-              Auth.safeRedirect(params.get("redirect")) || Auth.homeHref;
-          } catch (e) {
-            Auth.setStatus(statusEl, e.message, "error");
-            btn.disabled = false;
-            btn.textContent = "Đăng nhập";
-          }
-        });
-      });
-    </script>
+    <script src="../assets/js/phone-auth-page.js"></script>
   </body>
 </html>

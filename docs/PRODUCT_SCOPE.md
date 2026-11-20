@@ -1,6 +1,5 @@
-# Phạm vi website doanh nghiệp bán đồ điện tử
 
-> Đã triển khai bản demo local theo phạm vi người dùng xác nhận (16/11/2026). Xem README và DEMO_VALIDATION.md cho chức năng thực tế đã làm và giới hạn; phần vận hành kinh doanh thật bên dưới vẫn là đề xuất cho giai đoạn sau.
+# Phạm vi website doanh nghiệp bán đồ điện tử
 
 Trạng thái: đề xuất triển khai, chưa phải xác nhận hệ thống đã sẵn sàng bán hàng thật.
 Nền tảng: tiếp tục dự án PHP + MySQL + HTML/CSS/JavaScript hiện tại.

@@ -13,8 +13,7 @@ async function check(test, message) { assert.ok(await test(),message); checks++;
 async function login(email) {
   await page.goto(base + '/frontend/pages/login.html');
   await page.waitForLoadState('networkidle');
-  await page.locator('#email').fill(email);
-  await page.locator('#password').fill('123456');
+  await page.locator('#phone').fill(email === 'admin@ltweb.com' ? '0916111111' : '0916222222');
   await page.locator('#btn-submit').click();
   await page.waitForURL('**/frontend/index.html');
   await page.locator('#btn-logout').waitFor();
@@ -27,13 +26,9 @@ try {
   await page.screenshot({path:'.local-test/home-desktop.png',fullPage:true});
   await page.goto(base + '/frontend/pages/register.html');
   await page.waitForLoadState('networkidle');
-  await page.locator('#name').fill('Khách đăng ký trình duyệt');
-  await page.locator('#email').fill('browser-' + Date.now() + '@example.test');
-  await page.locator('#password').fill('123456');
-  await page.locator('#password2').fill('123456');
+  await page.locator('#phone').fill('0916222222');
   await page.locator('#btn-submit').click();
-  await page.waitForURL('**/pages/login.html');
-  await check(() => page.locator('#login-form').count().then(n => n === 1),'Browser registration');
+  await check(() => page.locator('#otp-step').isVisible(),'Registration OTP preview');
   await page.goto(base + '/frontend/pages/users/categories.html');
   await page.locator('#category-list .category-tile').first().waitFor();
   await page.locator('#category-list .category-tile').first().click();
@@ -49,8 +44,7 @@ try {
   await page.locator('[data-add]').first().click();
   await page.waitForURL('**/login.html?redirect=**');
   await page.waitForLoadState('networkidle');
-  await page.locator('#email').fill('user1@ltweb.com');
-  await page.locator('#password').fill('123456');
+  await page.locator('#phone').fill('0916222222');
   await page.locator('#btn-submit').click();
   await page.waitForURL('**/users/product-detail.html?id=1');
   await page.locator('#product-detail [data-add]').waitFor();
