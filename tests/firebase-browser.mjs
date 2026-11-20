@@ -12,8 +12,8 @@ try {
   const google=page.locator('#btn-google');
   await google.waitFor();
   await page.waitForFunction(()=>!document.querySelector('#btn-google').disabled);
-  assert.equal(await page.locator('#email-password-fields').isVisible(),false); checks++;
-  assert.equal(await page.locator('#forgot-password-link').isVisible(),false); checks++;
+  assert.equal(await page.locator('#phone-fields').isVisible(),true); checks++;
+  assert.equal(await page.locator('#forgot-password-link').count(),0); checks++;
   const popupPromise=page.waitForEvent('popup');
   await google.click();
   const popup=await popupPromise;
@@ -25,7 +25,7 @@ try {
   await page.locator('#auth-status').filter({hasText:'đóng cửa sổ'}).waitFor(); checks++;
   await page.goto('http://localhost:8014/frontend/pages/register.html');
   await page.waitForFunction(()=>!document.querySelector('#btn-google').disabled);
-  assert.equal(await page.locator('#email-password-fields').isVisible(),false); checks++;
+  assert.equal(await page.locator('#phone-fields').isVisible(),true); checks++;
   assert.equal((await page.locator('#btn-google').textContent()).trim(),'Tiếp tục bằng Google'); checks++;
   assert.deepEqual(errors,[]); checks++;
   console.log('PASS: '+checks+' Firebase browser checks (real SDK/popup; no Google account signed in).');

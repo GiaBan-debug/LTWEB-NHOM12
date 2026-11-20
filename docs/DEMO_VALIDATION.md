@@ -52,4 +52,4 @@ Screenshot desktop/mobile được lưu trong `.local-test/home-desktop.png` và
 
 ## Cách chạy lại
 
-Xem README cho lệnh `run-demo.cmd`, tạo DB test và hai lệnh `node tests/demo-api.mjs`, `node tests/demo-browser.mjs`. Test ghi dữ liệu chỉ chạy trên DB kiểm thử riêng; không trỏ vào DB của buổi demo hoặc cửa hàng thật.
+Xem README cho lệnh `run-demo.bat`, tạo DB test và hai lệnh `node tests/demo-api.mjs`, `node tests/demo-browser.mjs`. Test ghi dữ liệu chỉ chạy trên DB kiểm thử riêng; không trỏ vào DB của buổi demo hoặc cửa hàng thật.

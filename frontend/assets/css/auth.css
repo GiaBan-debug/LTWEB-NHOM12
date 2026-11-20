@@ -136,3 +136,8 @@
   border-color: #2563eb;
   color: #2563eb;
 }
+
+.auth-card [hidden] { display: none !important; }
+.btn-auth:disabled { opacity: .45; cursor: not-allowed; box-shadow: none; }
+.btn-auth:not(:disabled) { opacity: 1; }
+.auth-note { color: #64748b; font-size: 14px; line-height: 1.5; }

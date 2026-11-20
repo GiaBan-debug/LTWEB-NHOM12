@@ -5,6 +5,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/../includes/bootstrap.php';
+require_once __DIR__ . '/../includes/checkout.php';
 
 applyApiCors(['POST', 'OPTIONS']);
 if (authMode() !== 'legacy') throw new ApiException('Hãy đăng nhập bằng Firebase trên giao diện website.', 410);
@@ -15,24 +16,28 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-$body     = getJsonBody();
-$email    = inputString($body, 'email', 150, true);
-$password = $body['password'] ?? '';
-if (!is_string($password) || strlen($password) > 72) jsonResponse(false, null, 'Mật khẩu không hợp lệ.', 422);
-
-if (!filter_var($email, FILTER_VALIDATE_EMAIL) || $password === '') {
-    jsonResponse(false, null, 'Email hoặc mật khẩu không hợp lệ', 422);
-}
-
-$db   = getDB();
-$stmt = $db->prepare("SELECT * FROM users WHERE email = ? AND firebase_uid IS NULL");
-$stmt->execute([$email]);
-$user = $stmt->fetch();
-
-// Dùng password_verify để so sánh — không để lộ lý do sai cụ thể
-if (!$user || !$user['password'] || !password_verify($password, $user['password'])) {
-    jsonResponse(false, null, 'Email hoặc mật khẩu không đúng', 401);
-}
+$body = getJsonBody();
+$phone = normalizePhone(inputString($body, 'phone', 30, true));
+// Explicit test identities only. Never infer role from a real user's editable phone.
+$fixtures = [
+    '0916111111' => ['email' => 'legacy-admin@demo.invalid', 'name' => 'Admin thử nghiệm', 'role' => 'admin'],
+    '0916222222' => ['email' => 'legacy-user@demo.invalid', 'name' => 'Khách thử nghiệm', 'role' => 'user'],
+];
+$fixture = $fixtures[$phone] ?? null;
+if (!$fixture) throw new ApiException('Chế độ thử chỉ nhận 0916111111 (admin) hoặc 0916222222 (user).', 401);
+$db = getDB();
+// Stable rows keep demo carts/orders on subsequent logins. Existing accounts are untouched.
+$user = transaction($db, static function () use ($db, $fixture, $phone): array {
+    $db->prepare('INSERT INTO users (name, email, phone, password, role) VALUES (?, ?, ?, NULL, ?) ON DUPLICATE KEY UPDATE id = id')
+        ->execute([$fixture['name'], $fixture['email'], $phone, $fixture['role']]);
+    $stmt = $db->prepare('SELECT * FROM users WHERE email = ? FOR UPDATE');
+    $stmt->execute([$fixture['email']]);
+    $user = $stmt->fetch();
+    if (!$user || $user['firebase_uid'] || $user['role'] !== $fixture['role']) {
+        throw new ApiException('Tài khoản thử bị trùng dữ liệu. Hãy kiểm tra database.', 409);
+    }
+    return $user;
+});
 
 // Đổi session ID sau khi đăng nhập để tránh session fixation
 establishSession($user, 'legacy');
