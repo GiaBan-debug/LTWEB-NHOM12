@@ -24,8 +24,13 @@ function publicUser(array $user): array
         'id' => (int) $user['id'], 'name' => $user['name'], 'email' => $user['email'], 'role' => $user['role'],
         'phone' => $user['phone'] ?? '', 'address' => $user['address'] ?? '',
         'email_verified' => (bool) ($user['email_verified'] ?? false),
+        'phone_verified' => !empty($user['firebase_phone']),
         'auth_provider' => $_SESSION['auth_mode'] ?? authMode(),
     ];
+}
+function hasVerifiedFirebaseIdentity(array $user): bool
+{
+    return !empty($user['email_verified']) || !empty($user['firebase_phone']);
 }
 function establishSession(array $user, string $mode, ?int $tokenExpires = null): void
 {
@@ -46,7 +51,7 @@ function getCurrentUser(): ?array
         return null;
     }
     // Re-read roles and identity so demotion/deletion takes effect on every request.
-    $stmt = getDB()->prepare('SELECT id, name, email, role, phone, address, firebase_uid, email_verified FROM users WHERE id = ?');
+    $stmt = getDB()->prepare('SELECT id, name, email, role, phone, address, firebase_uid, email_verified, firebase_phone FROM users WHERE id = ?');
     $stmt->execute([(int) $_SESSION['user']['id']]);
     $user = $stmt->fetch();
     if (!$user || (authMode() === 'firebase' && (!$user['firebase_uid'] || $user['firebase_uid'] !== ($_SESSION['firebase_uid'] ?? null)))

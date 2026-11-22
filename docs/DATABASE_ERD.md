@@ -38,6 +38,7 @@ erDiagram
         string name "Họ và tên người dùng"
         string email UK "Email đăng nhập"
         string firebase_uid UK "Định danh duy nhất từ Firebase Auth"
+        string firebase_phone "SĐT E.164 đã xác minh từ Firebase; NULL nếu không có"
         string password "Mật khẩu mã hóa (NULL khi dùng thuần Firebase)"
         enum role "Quyền hạn: user, admin"
         string phone "Số điện thoại nhận hàng mặc định"

@@ -5,7 +5,7 @@ allowMethods(['GET']);
 jsonResponse(true, [
     'mode' => authMode(),
     'require_verified_email' => emailVerificationRequired(),
-    'providers' => ['google' => true, 'email_password' => appConfig('FIREBASE_EMAIL_PASSWORD_ENABLED', 'false') === 'true'],
+    'providers' => ['google' => true, 'phone' => appConfig('FIREBASE_PHONE_ENABLED', 'true') === 'true', 'email_password' => appConfig('FIREBASE_EMAIL_PASSWORD_ENABLED', 'false') === 'true'],
     'shipping' => shippingPolicy(),
     'firebase' => [
         'apiKey' => appConfig('FIREBASE_WEB_API_KEY', 'AIzaSyCY2kHt5owLohtsLdIqtt61NwHBFMljHu4'),

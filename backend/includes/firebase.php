@@ -40,8 +40,15 @@ final class FirebaseVerifier
         if (($claims['aud'] ?? null) !== $this->projectId || ($claims['iss'] ?? null) !== 'https://securetoken.google.com/' . $this->projectId
             || $claims['exp'] <= $now || $claims['exp'] <= $claims['iat'] || $claims['iat'] > $now || $claims['iat'] < 1 || $claims['auth_time'] > $claims['iat'] || $claims['auth_time'] < 1
             || !is_string($claims['sub'] ?? null) || $claims['sub'] === '' || mb_strlen($claims['sub']) > 128
-            || !is_string($claims['email'] ?? null) || strlen($claims['email']) > 150 || !filter_var($claims['email'], FILTER_VALIDATE_EMAIL)) {
+        ) {
             throw new ApiException('Firebase ID token không thuộc project hoặc người dùng hợp lệ.', 401);
+        }
+        $email = $claims['email'] ?? null;
+        $phone = $claims['phone_number'] ?? null;
+        if (($email !== null && (!is_string($email) || strlen($email) > 150 || !filter_var($email, FILTER_VALIDATE_EMAIL)))
+            || ($phone !== null && (!is_string($phone) || !preg_match('/^\+[1-9][0-9]{7,14}$/D', $phone)))
+            || ($email === null && $phone === null)) {
+            throw new ApiException('Firebase ID token thiếu email hoặc số điện thoại hợp lệ.', 401);
         }
         return $claims;
     }
@@ -87,19 +94,23 @@ function firebaseVerifier(): FirebaseVerifier
 function firebaseUser(PDO $db, array $claims): array
 {
     $uid = $claims['sub'];
-    $email = strtolower($claims['email']);
-    return transaction($db, static function () use ($db, $claims, $uid, $email): array {
+    $email = isset($claims['email']) ? strtolower($claims['email']) : null;
+    $phone = $claims['phone_number'] ?? null;
+    return transaction($db, static function () use ($db, $claims, $uid, $email, $phone): array {
         $stmt = $db->prepare('SELECT * FROM users WHERE firebase_uid = ? FOR UPDATE');
         $stmt->execute([$uid]);
         $user = $stmt->fetch();
         if (!$user) {
-            $stmt = $db->prepare('SELECT id FROM users WHERE email = ?');
-            $stmt->execute([$email]);
-            if ($stmt->fetch()) throw new ApiException('Email đã có tài khoản cũ. Nhờ quản trị liên kết UID để giữ giỏ hàng/đơn; hệ thống không tự gán tài khoản theo email.', 409);
-            $name = is_string($claims['name'] ?? null) && trim($claims['name']) !== '' ? mb_substr(trim($claims['name']), 0, 100) : mb_substr(explode('@', $email)[0], 0, 100);
+            if ($email !== null) {
+                $stmt = $db->prepare('SELECT id FROM users WHERE email = ?');
+                $stmt->execute([$email]);
+                if ($stmt->fetch()) throw new ApiException('Email đã có tài khoản cũ. Nhờ quản trị liên kết UID để giữ giỏ hàng/đơn; hệ thống không tự gán tài khoản theo email.', 409);
+            }
+            $name = is_string($claims['name'] ?? null) && trim($claims['name']) !== '' ? mb_substr(trim($claims['name']), 0, 100) : ($email !== null ? mb_substr(explode('@', $email)[0], 0, 100) : 'Khách hàng ' . substr($phone, -4));
+            $deliveryPhone = $phone && preg_match('/^\+84[0-9]{9}$/D', $phone) ? '0' . substr($phone, 3) : '';
             try {
-                $db->prepare("INSERT INTO users (firebase_uid, name, email, password, role, email_verified) VALUES (?, ?, ?, NULL, 'user', ?)")
-                    ->execute([$uid, $name, $email, ($claims['email_verified'] ?? false) === true ? 1 : 0]);
+                $db->prepare("INSERT INTO users (firebase_uid, name, email, password, role, email_verified, firebase_phone, phone) VALUES (?, ?, ?, NULL, 'user', ?, ?, ?)")
+                    ->execute([$uid, $name, $email, $email !== null && ($claims['email_verified'] ?? false) === true ? 1 : 0, $phone, $deliveryPhone]);
             } catch (PDOException $error) {
                 if ($error->getCode() === '23000') throw new ApiException('Tài khoản đang được cập nhật. Hãy thử lại.', 409);
                 throw $error;
@@ -108,9 +119,10 @@ function firebaseUser(PDO $db, array $claims): array
             $stmt->execute([(int) $db->lastInsertId()]);
             $user = $stmt->fetch();
         }
-        $verified = ($claims['email_verified'] ?? false) === true;
-        $db->prepare('UPDATE users SET email_verified = ? WHERE id = ?')->execute([$verified ? 1 : 0, $user['id']]);
+        $verified = $email !== null && ($claims['email_verified'] ?? false) === true;
+        $db->prepare('UPDATE users SET email_verified = ?, firebase_phone = ? WHERE id = ?')->execute([$verified ? 1 : 0, $phone, $user['id']]);
         $user['email_verified'] = $verified;
+        $user['firebase_phone'] = $phone;
         return $user;
     });
 }

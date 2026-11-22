@@ -47,6 +47,11 @@
             return;
           }
           document.querySelector("#verify-address").textContent = user.email;
+          if (!user.email || user.phone_verified) {
+            document.querySelector('#check-verification').hidden = true;
+            document.querySelector('#resend-verification').hidden = true;
+            Auth.setStatus(statusEl, 'Số điện thoại của bạn đã được xác minh. Bạn có thể tiếp tục mua hàng, không cần xác minh email.', 'ok');
+          }
         } catch (error) {
           Auth.setStatus(statusEl, error.message, "error");
         }

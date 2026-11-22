@@ -52,6 +52,8 @@ Trạng thái hợp lệ: pending → processing → shipped → completed. pend
 
 ## Hồ sơ và đánh giá sản phẩm
 
+Firebase Phone: frontend dùng `RecaptchaVerifier` → `signInWithPhoneNumber` → `confirmation.confirm(OTP)` → gửi ID token tới `firebase-session.php` như Google. Backend vẫn xác minh RS256/project/thời hạn, chấp nhận email hợp lệ hoặc phone_number dạng E.164 có chữ ký. Tài khoản chỉ có SĐT lưu email=NULL, không tạo email giả; `users.firebase_phone` là SĐT từ token, tách khỏi `users.phone` (SĐT giao hàng được phép sửa). `publicUser` trả `phone_verified`; SĐT đã xác thực đáp ứng yêu cầu xác minh khi checkout. Role chỉ lấy từ MySQL, không tự gộp tài khoản theo số điện thoại. `auth-config.php` trả thêm `providers.phone`, điều khiển bằng `FIREBASE_PHONE_ENABLED=true`.
+
 `PUT me.php` chỉ cập nhật trường name/phone/address được gửi; trường bị bỏ qua giữ nguyên. Điện thoại được chuẩn hóa về 10 chữ số bắt đầu bằng 0; cho phép để trống điện thoại/địa chỉ khi chưa hoàn thiện hồ sơ. Tên dài 2–100 ký tự, địa chỉ không trống phải dài 5–255 ký tự. Lỗi nhập liệu trả 422 với `data.errors` theo tên trường.
 
 Checkout dùng hồ sơ đủ thông tin để hiển thị địa chỉ mặc định cùng nút “Thay đổi”. `POST orders.php` với `use_profile: true` đọc tên/SĐT/địa chỉ mới nhất từ MySQL của chính phiên đăng nhập, không tin thông tin giao hàng gửi kèm. Vẫn gửi note và checkout_key. Khi thay đổi địa chỉ riêng cho đơn, gửi `use_profile: false` cùng receiver_name/phone/address; hồ sơ không bị thay đổi.

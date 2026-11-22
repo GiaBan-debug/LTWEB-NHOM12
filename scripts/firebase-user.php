@@ -21,7 +21,7 @@ if (isset($options['link'])) {
         $stmt = $db->prepare('SELECT id, email, firebase_uid FROM users WHERE id = ? FOR UPDATE');
         $stmt->execute([$id]);
         $user = $stmt->fetch();
-        if (!$user || strcasecmp($user['email'], $claims['email']) !== 0) throw new ApiException('UID phải thuộc đúng email của tài khoản cũ.');
+        if (!$user || !is_string($user['email']) || !is_string($claims['email'] ?? null) || strcasecmp($user['email'], $claims['email']) !== 0) throw new ApiException('UID phải thuộc đúng email của tài khoản cũ.');
         if ($user['firebase_uid'] && $user['firebase_uid'] !== $claims['sub']) throw new ApiException('Tài khoản đã liên kết với UID khác.', 409);
         if (($claims['email_verified'] ?? false) !== true) throw new ApiException('Cần email Firebase đã xác minh để liên kết tài khoản cũ.', 403);
         $db->prepare('UPDATE users SET firebase_uid=?, email_verified=1, password=NULL WHERE id=?')->execute([$claims['sub'], $id]);

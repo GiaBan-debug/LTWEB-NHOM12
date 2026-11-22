@@ -7,10 +7,11 @@
 CREATE TABLE IF NOT EXISTS users (
     id         INT UNSIGNED     AUTO_INCREMENT PRIMARY KEY,
     name       VARCHAR(100)     NOT NULL,
-    email      VARCHAR(150)     NOT NULL UNIQUE,
+    email      VARCHAR(150)     NULL UNIQUE,
     password   VARCHAR(255)     NULL,
     firebase_uid VARCHAR(128) COLLATE utf8mb4_bin NULL UNIQUE,
     email_verified TINYINT(1) NOT NULL DEFAULT 0,
+    firebase_phone VARCHAR(16) NULL,
     phone      VARCHAR(15) NOT NULL DEFAULT '',
     address    VARCHAR(255) NOT NULL DEFAULT '',
     role       ENUM('user','admin') NOT NULL DEFAULT 'user',

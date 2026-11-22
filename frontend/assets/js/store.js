@@ -423,6 +423,7 @@ root.querySelectorAll("[data-gallery-index]").forEach((button) => {
       const form = document.querySelector("#profile-form");
       form.elements.name.value = data.name || "";
       form.elements.email.value = data.email || "";
+      form.elements.email.closest('label').hidden = !data.email;
       form.elements.phone.value = data.phone || "";
       form.elements.address.value = data.address || "";
       form.querySelector('button').disabled = false;

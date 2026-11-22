@@ -1,6 +1,6 @@
 # Nhóm 12 Store — PHP/MySQL demo
 
-> Mặc định dùng Firebase **Google sign-in** của project `bta-store`. Trong `AUTH_MODE=legacy`, nhập **0916111111** (admin) hoặc **0916222222** (user), không cần mật khẩu/OTP. Xem [cấu hình xác thực](#firebase-authentication).
+> Mặc định dùng Firebase **Google và SĐT/OTP** của project `bta-store`. SĐT cần hoàn tất [cấu hình domain/SMS](docs/FIREBASE_PHONE.md). Trong `AUTH_MODE=legacy`, nhập **0916111111** (admin) hoặc **0916222222** (user), không cần mật khẩu/OTP. Xem [cấu hình xác thực](#firebase-authentication).
 
 Website bán điện thoại, laptop, tablet và phụ kiện, dành cho đồ án/portfolio. Có dữ liệu MySQL thật, mua hàng COD và quản trị; chưa tích hợp thanh toán hoặc vận chuyển thực tế.
 
@@ -57,9 +57,9 @@ run-demo.bat -PhpPath "D:\xampp\php\php.exe"
 
 Chọn cơ chế bằng `AUTH_MODE`:
 1. **`legacy` (chỉ kiểm thử):** nhập SĐT 0916111111 (admin) hoặc 0916222222 (user). Backend tạo hai user thử riêng ở lần đầu, giữ cùng ID/giỏ/đơn cho các lần sau. Không xác minh quyền sở hữu SĐT, không dùng chế độ này khi triển khai thật.
-2. **`firebase` (mặc định):** đăng nhập Google qua Firebase Web SDK, gửi **ID token có chữ ký** tới `backend/api/firebase-session.php`. Route tương thích `firebase-auth.php` cũng xác minh đầy đủ; không chấp nhận UID do client tự gửi. Email/Password Firebase hiện chưa bật.
+2. **`firebase` (mặc định):** đăng nhập Google hoặc SĐT/OTP qua Firebase Web SDK, gửi **ID token có chữ ký** tới `backend/api/firebase-session.php`. Route tương thích `firebase-auth.php` cũng xác minh đầy đủ; không chấp nhận UID do client tự gửi. Email/Password Firebase hiện chưa bật.
 
-UID trong dữ liệu seed để `NULL`; tài khoản email/mật khẩu seed cũ không dùng để đăng nhập Google. Backend xác minh ID token rồi liên kết theo `users.firebase_uid`, giữ hồ sơ/quyền/giỏ/đơn trong MySQL. Không tự liên kết tài khoản cũ chỉ vì trùng email. Phiên PHP mặc định tối đa 3.600 giây, không vượt hạn ID token; đăng xuất xóa cả phiên Firebase và PHP. Form SĐT hiện chỉ chuẩn bị bước OTP, chưa gửi SMS.
+UID trong dữ liệu seed để `NULL`; tài khoản email/mật khẩu seed cũ không dùng để đăng nhập Google. Backend xác minh ID token rồi liên kết theo `users.firebase_uid`, giữ hồ sơ/quyền/giỏ/đơn trong MySQL. Không tự liên kết tài khoản cũ chỉ vì trùng email hoặc SĐT hồ sơ. Phiên PHP mặc định tối đa 3.600 giây, không vượt hạn ID token; đăng xuất xóa cả phiên Firebase và PHP. Đăng nhập/đăng ký SĐT đã nối Firebase SMS/reCAPTCHA; xem [hướng dẫn Quick Tunnel và OTP](docs/FIREBASE_PHONE.md).
 
 Để cấp admin, đăng nhập Google vào website trước, rồi chạy PowerShell tại gốc dự án:
 

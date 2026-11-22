@@ -36,7 +36,7 @@ if (($input['use_profile'] ?? false) === true) {
     $input['phone'] = $profile['phone'] ?? '';
     $input['address'] = $profile['address'] ?? '';
 }
-if (authMode() === 'firebase' && emailVerificationRequired() && !getCurrentUser()['email_verified']) {
+if (authMode() === 'firebase' && emailVerificationRequired() && !hasVerifiedFirebaseIdentity(getCurrentUser())) {
     throw new ApiException('Hãy xác minh email trước khi đặt hàng.', 403, ['code' => 'EMAIL_NOT_VERIFIED']);
 }
 $name = inputString($input, 'receiver_name', 100, true);

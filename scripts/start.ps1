@@ -9,6 +9,13 @@ if (!$PhpPath) {
     else { throw 'Khong tim thay PHP. Truyen -PhpPath duong-dan/php.exe' }
 }
 $phpDirectory = Split-Path (Resolve-Path $PhpPath) -Parent
+# Full XAMPP already enables these in php.ini; load only missing extensions.
+$loadedExtensions = @(& $PhpPath -d "extension_dir=$phpDirectory/ext" -m)
+if ($LASTEXITCODE -ne 0) { throw "Khong chay duoc PHP: $PhpPath" }
+$phpArguments = @('-d', "extension_dir=$phpDirectory/ext")
+foreach ($extension in @('pdo_mysql', 'mbstring', 'openssl', 'curl', 'fileinfo')) {
+    if ($loadedExtensions -notcontains $extension) { $phpArguments += @('-d', "extension=$extension") }
+}
 if (!(Test-Path (Join-Path $projectRoot 'vendor/autoload.php'))) { throw 'Run scripts/setup.ps1 to install PHP dependencies.' }
 
 # Read the same connection configuration as PHP; process environment takes precedence.
@@ -79,13 +86,13 @@ try {
         }
         if (!$ready) { throw 'MariaDB chua san sang.' }
     }
-    & $PhpPath -d "extension_dir=$phpDirectory/ext" -d extension=pdo_mysql scripts/database.php --initialize
+    & $PhpPath @phpArguments scripts/database.php --initialize
     if ($LASTEXITCODE -ne 0) { throw 'Khong cap nhat duoc database. Neu DB moi, chay scripts/database.php --initialize truoc.' }
 $sessionDirectory = Join-Path $projectRoot '.local-test/sessions'
 New-Item -ItemType Directory -Force $sessionDirectory | Out-Null
 Write-Output "Website: http://localhost:$Port/"
 Write-Output 'Giu terminal nay mo. Nhan Ctrl+C de dung.'
-& $PhpPath -d "extension_dir=$phpDirectory/ext" -d extension=pdo_mysql -d extension=mbstring -d extension=openssl -d extension=curl -d extension=fileinfo -d "curl.cainfo=$projectRoot/backend/config/cacert.pem" -d "openssl.cafile=$projectRoot/backend/config/cacert.pem" -d "session.save_path=$sessionDirectory" -d display_errors=0 -d log_errors=1 -d error_log="$projectRoot/php-server-error.log" -S "localhost:$Port" -t $projectRoot router.php
+& $PhpPath @phpArguments -d "curl.cainfo=$projectRoot/backend/config/cacert.pem" -d "openssl.cafile=$projectRoot/backend/config/cacert.pem" -d "session.save_path=$sessionDirectory" -d display_errors=0 -d log_errors=1 -d error_log="$projectRoot/php-server-error.log" -S "localhost:$Port" -t $projectRoot router.php
 if ($LASTEXITCODE -ne 0) { throw 'PHP server stopped with an error; inspect php-server-error.log.' }
 } finally {
     # Shut down only a database process started by this invocation.

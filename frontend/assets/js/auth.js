@@ -46,6 +46,15 @@
       "auth/email-already-in-use":
         "Email đã được đăng ký. Hãy đăng nhập hoặc đặt lại mật khẩu.",
       "auth/invalid-email": "Email không hợp lệ.",
+      "auth/invalid-phone-number": "Số điện thoại không hợp lệ. Hãy dùng số Việt Nam 10 chữ số hoặc +84.",
+      "auth/invalid-verification-code": "Mã OTP không đúng. Hãy kiểm tra lại mã 6 chữ số.",
+      "auth/code-expired": "Mã OTP đã hết hạn. Hãy gửi lại mã.",
+      "auth/session-expired": "Phiên xác thực OTP đã hết hạn. Hãy gửi lại mã.",
+      "auth/captcha-check-failed": "Xác minh reCAPTCHA thất bại. Kiểm tra Authorized domains rồi thử lại.",
+      "auth/invalid-app-credential": "Chưa xác minh được ứng dụng. Kiểm tra Authorized domains và reCAPTCHA trong Firebase.",
+      "auth/missing-app-credential": "Chưa hoàn thành xác minh reCAPTCHA. Hãy thử lại.",
+      "auth/quota-exceeded": "Firebase đã hết hạn mức SMS. Thử lại sau hoặc dùng số kiểm thử trong Firebase Console.",
+      "auth/billing-not-enabled": "Firebase chưa bật thanh toán cho SMS. Có thể thử bằng số kiểm thử đã cấu hình.",
       "auth/weak-password": "Mật khẩu chưa đủ mạnh. Hãy dùng ít nhất 6 ký tự.",
       "auth/operation-not-allowed":
         "Phương thức đăng nhập chưa bật trong Firebase Authentication → Sign-in method.",
@@ -139,7 +148,7 @@
       area.innerHTML = `<a href="${pagesPrefix}login.html">Đăng nhập</a><span aria-hidden="true"> | </span><a href="${pagesPrefix}register.html">Đăng ký</a>`;
       return;
     }
-    area.innerHTML = `<a class="auth-user" href="${url("frontend/pages/users/profile.html")}">Xin chào, ${escapeHtml(user.name)}</a>${user.auth_provider === "firebase" && !user.email_verified ? `<a href="${pagesPrefix}verify-email.html">Xác minh email</a>` : ""}${user.role === "admin" ? `<a class="auth-admin" href="${adminHref}">Quản trị</a>` : ""}<button type="button" class="btn-logout" id="btn-logout">Đăng xuất</button>`;
+    area.innerHTML = `<a class="auth-user" href="${url("frontend/pages/users/profile.html")}">Xin chào, ${escapeHtml(user.name)}</a>${user.auth_provider === "firebase" && user.email && !user.email_verified && !user.phone_verified ? `<a href="${pagesPrefix}verify-email.html">Xác minh email</a>` : ""}${user.role === "admin" ? `<a class="auth-admin" href="${adminHref}">Quản trị</a>` : ""}<button type="button" class="btn-logout" id="btn-logout">Đăng xuất</button>`;
     area
       .querySelector("#btn-logout")
       .addEventListener("click", async (event) => {
@@ -163,6 +172,31 @@
     emailRe,
     config,
     currentUser,
+    async startPhoneLogin(phone, container) {
+      loggingOut = false;
+      const settings = await config();
+      if (settings.mode !== 'firebase' || !settings.providers.phone) throw new Error('Đăng nhập bằng SĐT chưa được bật trên website.');
+      const normalized = Shop.normalizePhone(phone);
+      if (!normalized) throw new Error('Số điện thoại không hợp lệ.');
+      if (!window.isSecureContext || ['localhost', '127.0.0.1', '[::1]'].includes(location.hostname)) {
+        throw new Error('Hãy mở website bằng địa chỉ HTTPS của Cloudflare Tunnel đã thêm vào Firebase Authorized domains để xác thực SĐT.');
+      }
+      let verifier;
+      try {
+        const fb = await client();
+        verifier = new fb.RecaptchaVerifier(fb.auth, container, {size:'normal'});
+        const confirmation = await fb.signInWithPhoneNumber(fb.auth, '+84' + normalized.slice(1), verifier);
+        let verifiedUser;
+        return {async confirm(code) {
+          if (!/^\d{6}$/.test(code)) throw new Error('Mã OTP phải gồm 6 chữ số.');
+          try {
+            verifiedUser ??= (await confirmation.confirm(code)).user;
+            return await bridge(verifiedUser);
+          } catch (error) { throw readableError(error); }
+        }};
+      } catch (error) { throw readableError(error); }
+      finally { verifier?.clear(); }
+    },
     async setupAuthPage(button, statusEl) {
       button.disabled = true;
       try {

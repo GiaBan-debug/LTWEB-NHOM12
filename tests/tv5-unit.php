@@ -24,6 +24,14 @@ $claims = ['sub'=>'test-uid-' . bin2hex(random_bytes(6)), 'aud'=>'bta-store', 'i
 $encode = static fn(array $payload, string $kid = 'test-kid') => JWT::encode($payload, $privateKey, 'RS256', $kid);
 $verified = $verifier->verify($encode($claims));
 check($verified['sub'] === $claims['sub'], 'Valid signed Firebase claims');
+$phoneClaims = $claims;
+unset($phoneClaims['email'], $phoneClaims['email_verified'], $phoneClaims['name']);
+$phoneClaims['sub'] = 'phone-' . bin2hex(random_bytes(6));
+$phoneClaims['phone_number'] = '+84912345678';
+$phoneClaims['firebase'] = ['sign_in_provider' => 'phone'];
+$verifiedPhone = $verifier->verify($encode($phoneClaims));
+check($verifiedPhone['phone_number'] === '+84912345678' && !isset($verifiedPhone['email']), 'Signed phone-only token accepted');
+foreach ([['phone_number'=>'0912345678'], ['phone_number'=>[]], ['phone_number'=>null], ['phone_number'=>'+'.str_repeat('1',16)], ['aud'=>'wrong-project']] as $override) rejects(static fn() => $verifier->verify($encode(array_replace($phoneClaims,$override))));
 foreach ([['aud'=>'another-project'], ['iss'=>'https://attacker.invalid'], ['exp'=>time()-1], ['iat'=>time()+3600], ['auth_time'=>time()+3600], ['sub'=>''], ['sub'=>str_repeat('a',129)], ['email'=>['not-a-string']], ['email'=>'bad-email'], ['iat'=>0]] as $override) {
     rejects(static fn() => $verifier->verify($encode(array_replace($claims,$override))));
 }
@@ -50,6 +58,18 @@ check(orderAmounts(0)['total'] === 0,'Empty cart no delivery fee');
 
 if (appConfig('TV5_TEST_DATABASE') === 'true') {
     $db = getDB();
+    $phoneUser = firebaseUser($db, $verifiedPhone + ['role'=>'admin']);
+    check($phoneUser['email'] === null && $phoneUser['password'] === null && $phoneUser['role'] === 'user', 'Phone-only user stores no fake email/password or frontend role');
+    check($phoneUser['phone'] === '0912345678' && $phoneUser['firebase_phone'] === '+84912345678', 'Verified identity separated from delivery phone');
+    $db->prepare('UPDATE users SET phone=?, address=? WHERE id=?')->execute(['0987654321','Địa chỉ đã lưu',$phoneUser['id']]);
+    $phoneAgain = firebaseUser($db, $verifiedPhone);
+    check($phoneAgain['id'] === $phoneUser['id'] && $phoneAgain['phone'] === '0987654321' && $phoneAgain['address'] === 'Địa chỉ đã lưu', 'Phone login keeps profile and internal ID');
+    $otherPhone = firebaseUser($db, array_replace($verifiedPhone,['sub'=>'other-' . $verifiedPhone['sub'],'phone_number'=>'+84987654321']));
+    check($otherPhone['id'] !== $phoneUser['id'], 'Delivery phone match never merges accounts');
+    establishSession($phoneAgain, 'firebase', time()+3600);
+    check(publicUser(getCurrentUser())['phone_verified'] === true, 'Phone identity survives PHP session');
+    check(hasVerifiedFirebaseIdentity(getCurrentUser()), 'Verified phone satisfies checkout identity requirement');
+    check(!hasVerifiedFirebaseIdentity(['email_verified'=>false,'phone'=>'0912345678','firebase_phone'=>null]), 'Editable delivery phone never bypasses checkout verification');
     $user = firebaseUser($db, $verified + ['role'=>'admin']);
     check($user['role'] === 'user','Client claims cannot grant admin');
     check($user['password'] === null,'No Firebase password in MySQL');

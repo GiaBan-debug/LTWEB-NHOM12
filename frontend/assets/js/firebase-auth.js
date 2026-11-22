@@ -16,6 +16,8 @@ import {
   reload,
   GoogleAuthProvider,
   signInWithPopup,
+  RecaptchaVerifier,
+  signInWithPhoneNumber,
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
 
 let ready;
@@ -39,6 +41,8 @@ export function firebaseClient(config) {
       reload,
       GoogleAuthProvider,
       signInWithPopup,
+      RecaptchaVerifier,
+      signInWithPhoneNumber,
     };
   })().catch((error) => {
     ready = null;
