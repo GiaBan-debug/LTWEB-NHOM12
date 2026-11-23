@@ -54,6 +54,25 @@
         sort = document.querySelector("#sort-filter");
       let requestNumber = 0;
       const catalogCategories = await categories();
+      const budgetBox = document.querySelector("#catalog-budget");
+      const budgetFilter = document.querySelector("#within-budget");
+      const budgetRemaining = document.querySelector("#catalog-budget-remaining");
+      const productCount = document.querySelector("#product-count");
+      let budget = S.getBudgetState();
+      let appliedFilters;
+      budgetFilter.checked = budget.limit !== null && params.get("within_budget") === "1";
+
+      function renderBudgetFilter() {
+        budgetBox.hidden = budget.limit === null;
+        if (budgetBox.hidden) budgetFilter.checked = false;
+        budgetFilter.disabled = !budgetFilter.checked && budget.remaining === null;
+        if (budget.remaining === null) budgetRemaining.textContent = "Chưa có số dư từ giỏ hàng";
+        else budgetRemaining.textContent = budget.remaining < 0
+          ? `Vượt ${S.money(-budget.remaining)}`
+          : `Còn ${S.money(budget.remaining)}`;
+      }
+      renderBudgetFilter();
+
       const linkedCategory = catalogCategories.find((category) => category.slug === params.get("category_slug"));
       document.querySelector("#category-filter").innerHTML += catalogCategories
         .map((c) => `<option value="${c.id}">${e(c.name)}</option>`)
@@ -90,18 +109,18 @@ for (const key of ["min_price", "max_price"]) {
 }
       sort.value = params.get("sort") || "newest";
       if (!sort.value) sort.value = "newest";
-      async function load(page = 1) {
+      async function load(page = 1, useAppliedFilters = false) {
         const number = ++requestNumber;
         list.innerHTML =
           '<div class="skeleton" role="status">Đang tải sản phẩm…</div>';
         document.querySelector("#pagination").innerHTML = "";
-        const formData = new FormData(form);
-
-// Loại bỏ dấu chấm khỏi giá trước khi gửi API và tạo URL
-formData.set("min_price", parsePrice(formData.get("min_price")));
-formData.set("max_price", parsePrice(formData.get("max_price")));
-
-const query = new URLSearchParams(formData);
+        if (!useAppliedFilters || !appliedFilters) {
+          appliedFilters = new URLSearchParams(new FormData(form));
+          for (const key of ["min_price", "max_price"]) {
+            appliedFilters.set(key, parsePrice(appliedFilters.get(key)));
+          }
+        }
+        const query = new URLSearchParams(appliedFilters);
         query.set("page", page);
         query.set("limit", 9);
         query.set(
@@ -121,19 +140,35 @@ const query = new URLSearchParams(formData);
         visible.delete("sort_by");
         visible.delete("sort_dir");
         visible.delete("limit");
+        if (budgetFilter.checked) visible.set("within_budget", "1");
         history.replaceState(null, "", "?" + visible);
+
+        if (budgetFilter.checked) {
+          const manualMax = query.get("max_price");
+          const max = manualMax === "" ? budget.remaining : Math.min(Number(manualMax), budget.remaining);
+          let message;
+          if (budget.remaining === null) message = "Chưa có số dư để lọc sản phẩm. Bạn có thể bỏ chọn bộ lọc và tiếp tục mua sắm.";
+          else if (budget.remaining < 0) message = "Giỏ hàng đang vượt ngân sách. Hãy chỉnh ngân sách hoặc giảm bớt món trong giỏ.";
+          else if (Number(query.get("min_price")) > max) message = "Giá tối thiểu vượt mức còn lại. Hãy giảm giá tối thiểu để xem sản phẩm phù hợp.";
+          if (message) {
+            productCount.textContent = "";
+            list.innerHTML = `<div class="empty">${e(message)}</div>`;
+            return;
+          }
+          query.set("max_price", max);
+        }
+
         try {
           const { data } = await S.api("products.php?" + query);
           if (number !== requestNumber) return;
-          document.querySelector("#product-count").textContent =
-            `${data.total} sản phẩm · Trang ${data.page}`;
+          productCount.textContent = `${data.total} sản phẩm · Trang ${data.page}`;
           list.innerHTML = data.items.length
             ? data.items.map(S.productCard).join("")
             : '<div class="empty">Không tìm thấy sản phẩm phù hợp. Hãy đổi bộ lọc.</div>';
           document.querySelector("#pagination").innerHTML = S.pagination(data);
         } catch (err) {
           if (number === requestNumber) {
-            document.querySelector("#product-count").textContent = "";
+            productCount.textContent = "";
             S.error(list, err.message);
           }
         }
@@ -145,6 +180,8 @@ const query = new URLSearchParams(formData);
       form.addEventListener("reset", () => {
         setTimeout(() => {
           sort.value = "newest";
+          budgetFilter.checked = false;
+          renderBudgetFilter();
           load();
         }, 0);
       });
@@ -152,6 +189,19 @@ const query = new URLSearchParams(formData);
       document.querySelector("#pagination").addEventListener("click", (ev) => {
         const b = ev.target.closest("[data-page]");
         if (b && !b.disabled) load(Number(b.dataset.page));
+      });
+      budgetFilter.addEventListener("change", () => {
+        renderBudgetFilter();
+        load(1, true);
+      });
+      document.addEventListener("shop:budget-change", ({ detail }) => {
+        const shouldReload = budgetFilter.checked && (budget.remaining !== detail.remaining || budget.limit !== detail.limit);
+        budget = detail;
+        renderBudgetFilter();
+        if (shouldReload) load(1, true);
+      });
+      window.addEventListener("focus", () => {
+        if (budget.limit !== null) S.updateCartCount();
       });
       await load(Number(params.get("page")) || 1);
     }

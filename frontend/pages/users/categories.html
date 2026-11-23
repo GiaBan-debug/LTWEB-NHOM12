@@ -24,6 +24,21 @@
     <p class="lead" style="margin-top:12px">Một thiết bị cho mỗi nhu cầu. Bắt đầu từ danh mục bạn quan tâm.</p>
   </div>
 
+  <section id="shopping-budget" class="panel shopping-budget" aria-labelledby="shopping-budget-title">
+    <h2 id="shopping-budget-title">Ngân sách mua sắm</h2>
+    <p class="subtle">Đặt ngân sách nếu bạn muốn theo dõi số tiền còn lại. Số dư tính theo tiền sản phẩm trong giỏ, trước phí giao hàng.</p>
+    <form id="shopping-budget-form" class="shopping-budget-form">
+      <label class="field">
+        Ngân sách (₫)
+        <input type="number" name="budget" inputmode="numeric" min="1" max="1000000000" step="1" placeholder="Ví dụ: 10000000" required>
+      </label>
+      <button class="button" type="submit">Lưu ngân sách</button>
+      <button class="button secondary" type="button" id="shopping-budget-clear" hidden>Bỏ ngân sách</button>
+    </form>
+    <p id="shopping-budget-status" class="subtle" role="status"></p>
+    <a class="section-link shopping-budget-browse" data-budget-browse href="products.html?within_budget=1" hidden>Xem sản phẩm vừa ngân sách còn lại →</a>
+  </section>
+
   <div id="category-list" class="category-grid">
     <p class="subtle">Đang tải danh mục…</p>
   </div>

@@ -162,7 +162,7 @@
 
     const count = data.total_items;
     els.navCount.textContent = count;
-    document.querySelectorAll('[data-cart-count]').forEach(el => { el.textContent = count; });
+    Shop.renderCartSummary(data);
     els.navCount.hidden = count === 0;
 
     if (data.is_empty) {

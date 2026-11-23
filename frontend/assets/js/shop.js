@@ -166,20 +166,107 @@
     );
   }
 
-  /* ---- Cart count badge ---- */
-  async function updateCartCount() {
+  /* ---- Cart count and optional shopping budget ---- */
+  const budgetKey = "bta.shoppingBudget";
+  let shoppingBudget = readBudget();
+  let cartSubtotal = null;
+  let cartRead = 0;
+
+  function readBudget() {
     try {
-      const result = await api("cart.php");
-      document.querySelectorAll("[data-cart-count]").forEach((el) => {
-        el.textContent = result.data.total_items;
-        el.closest(".cart-badge-wrap")?.classList.toggle(
-          "hidden",
-          result.data.total_items === 0,
-        );
-      });
+      const saved = Number(localStorage.getItem(budgetKey));
+      return Number.isInteger(saved) && saved > 0 && saved <= 1000000000 ? saved : null;
     } catch {
-      /* guest stays zero */
+      return null;
     }
+  }
+
+  function getBudgetState() {
+    return {
+      limit: shoppingBudget,
+      remaining: shoppingBudget === null || cartSubtotal === null ? null : shoppingBudget - cartSubtotal,
+    };
+  }
+
+  function renderBudget() {
+    const budget = getBudgetState();
+    const browse = document.querySelector("[data-budget-browse]");
+    if (browse) browse.hidden = budget.limit === null;
+    const badge = document.querySelector("[data-cart-budget]");
+    if (badge) {
+      badge.hidden = budget.limit === null;
+      badge.classList.toggle("is-over", budget.remaining < 0);
+      badge.textContent = badge.hidden ? "" : budget.remaining === null
+        ? `Ngân sách ${money(budget.limit)}`
+        : `${budget.remaining < 0 ? "Vượt" : "Còn"} ${money(Math.abs(budget.remaining))}`;
+      badge.closest(".cart-link").setAttribute("aria-label", badge.hidden ? "Giỏ hàng" : `Giỏ hàng · ${badge.textContent}`);
+    }
+    document.dispatchEvent(new CustomEvent("shop:budget-change", { detail: budget }));
+  }
+
+  function renderCartSummary(data) {
+    ++cartRead;
+    cartSubtotal = Number(data.subtotal);
+    document.querySelectorAll("[data-cart-count]").forEach((el) => {
+      el.textContent = data.total_items;
+      el.closest(".cart-badge-wrap")?.classList.toggle("hidden", data.total_items === 0);
+    });
+    renderBudget();
+  }
+
+  async function updateCartCount() {
+    const read = ++cartRead;
+    try {
+      const { data } = await api("cart.php");
+      if (read === cartRead) renderCartSummary(data);
+    } catch (error) {
+      if (read === cartRead && error.status === 401) {
+        renderCartSummary({ total_items: 0, subtotal: 0 });
+      }
+    }
+  }
+
+  function mountBudgetForm() {
+    const form = document.querySelector("#shopping-budget-form");
+    if (!form) return;
+    const field = form.elements.budget;
+    const clear = document.querySelector("#shopping-budget-clear");
+    const status = document.querySelector("#shopping-budget-status");
+
+    function fillBudgetForm() {
+      field.value = shoppingBudget ?? "";
+      clear.hidden = shoppingBudget === null;
+    }
+
+    function setBudget(amount) {
+      shoppingBudget = amount;
+      let persisted = true;
+      try {
+        if (amount === null) localStorage.removeItem(budgetKey);
+        else localStorage.setItem(budgetKey, String(amount));
+      } catch {
+        persisted = false;
+      }
+      fillBudgetForm();
+      renderBudget();
+      if (amount === null) status.textContent = "Đã bỏ ngân sách.";
+      else status.textContent = persisted
+        ? `Đã lưu ngân sách ${money(amount)} trên trình duyệt này.`
+        : "Trình duyệt đang chặn lưu ngân sách. Giá trị chỉ dùng trên trang này.";
+    }
+
+    fillBudgetForm();
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      if (form.checkValidity()) setBudget(field.valueAsNumber);
+    });
+    clear.addEventListener("click", () => { setBudget(null); field.focus(); });
+    window.addEventListener("storage", (event) => {
+      if (event.key === budgetKey || event.key === null) fillBudgetForm();
+    });
+    window.addEventListener("pageshow", (event) => {
+      if (event.persisted) fillBudgetForm();
+    });
   }
 
   /* ---- Category card ---- */
@@ -318,13 +405,14 @@
   </a>
   <nav class="primary-nav" aria-label="Điều hướng chính">
     <a href="${page("products")}">Sản phẩm</a>
-    <a href="${page("categories")}">Danh mục</a>
+    <a href="${page("categories")}">Danh mục &amp; Ngân sách</a>
     <a href="${page("order-history")}">Đơn hàng</a>
   </nav>
   <div class="header-tools">
     <a class="cart-link" href="${page("cart")}" aria-label="Giỏ hàng">
       ${icons.bag}
       <span class="cart-badge" data-cart-count>0</span>
+      <span class="cart-budget" data-cart-budget hidden></span>
     </a>
     <div id="auth-area" class="auth-area"></div>
   </div>
@@ -404,6 +492,19 @@
     mountHeader();
     mountFooter();
     mountContact();
+    renderBudget();
+    window.addEventListener("storage", (event) => {
+      if (event.key !== budgetKey && event.key !== null) return;
+      shoppingBudget = readBudget();
+      renderBudget();
+    });
+    window.addEventListener("pageshow", (event) => {
+      if (!event.persisted) return;
+      shoppingBudget = readBudget();
+      renderBudget();
+      updateCartCount();
+    });
+    mountBudgetForm();
     updateCartCount();
 
     /* Reload button in error notices */
@@ -421,11 +522,16 @@
         const quantity = Number(
           document.querySelector("#buy-quantity")?.value || 1,
         );
-        await api("cart.php", {
+        const productId = Number(addBtn.dataset.add);
+        const readBeforeAdd = cartRead;
+        const { data } = await api("cart.php", {
           method: "POST",
-          body: { product_id: Number(addBtn.dataset.add), quantity },
+          body: { product_id: productId, quantity },
         });
-        toast("Đã thêm vào giỏ hàng.");
+        if (readBeforeAdd === cartRead) renderCartSummary(data);
+        const item = data.items.find((row) => row.product_id === productId);
+        const change = shoppingBudget !== null && item ? ` −${money(item.price * quantity)}` : "";
+        toast(`Đã thêm vào giỏ hàng.${change}`);
         await updateCartCount();
       } catch (e) {
         if (e.status === 401) login();
@@ -456,6 +562,8 @@
     pagination,
     toast,
     updateCartCount,
+    renderCartSummary,
+    getBudgetState,
     orderDetail,
   };
 })();
