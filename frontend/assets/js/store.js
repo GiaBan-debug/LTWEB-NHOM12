@@ -10,11 +10,24 @@
   }
   try {
     if (view === "home") {
+      const needsForm = document.querySelector("#shop-needs-form");
+      needsForm?.addEventListener("formdata", ({ formData }) => {
+        formData.set("search", needsForm.elements.search.value.trim());
+        const budget = needsForm.elements.max_price.valueAsNumber;
+        if (Number.isFinite(budget)) formData.set("max_price", String(budget));
+        for (const key of ["search", "category_id", "max_price"]) {
+          if (!formData.get(key)) formData.delete(key);
+        }
+      });
       await Promise.allSettled([
         categories()
           .then((list) => {
             document.querySelector("#home-categories").innerHTML =
               list.map(S.categoryCard).join("") || "<p>Chưa có danh mục.</p>";
+            const categorySelect = needsForm?.elements.category_id;
+            if (categorySelect) {
+              for (const category of list) categorySelect.add(new Option(category.name, category.id));
+            }
           })
           .catch((err) =>
             S.error(document.querySelector("#home-categories"), err.message),
@@ -40,9 +53,9 @@
         list = document.querySelector("#product-list"),
         sort = document.querySelector("#sort-filter");
       let requestNumber = 0;
-      document.querySelector("#category-filter").innerHTML += (
-        await categories()
-      )
+      const catalogCategories = await categories();
+      const linkedCategory = catalogCategories.find((category) => category.slug === params.get("category_slug"));
+      document.querySelector("#category-filter").innerHTML += catalogCategories
         .map((c) => `<option value="${c.id}">${e(c.name)}</option>`)
         .join("");
       // Định dạng giá có dấu chấm phân cách hàng nghìn
@@ -58,7 +71,7 @@ function parsePrice(value) {
 
 // Khôi phục bộ lọc từ URL
 for (const key of ["search", "category_id", "min_price", "max_price"]) {
-    const value = params.get(key) || "";
+    const value = params.get(key) ?? (key === "category_id" ? linkedCategory?.id ?? "" : "");
 
     form.elements[key].value =
         key === "min_price" || key === "max_price"
@@ -171,6 +184,18 @@ const query = new URLSearchParams(formData);
         productImages.unshift(p.thumbnail);
       }
 
+      const angleViews = p.slug === "xiaomi-pad-6" ? [
+        { src: "products/xiaomi-pad-6-2.jpg", label: "Mặt trước" },
+        { src: "products/xiaomi-pad-6-3.jpg", label: "Mặt sau" },
+        { src: "products/xiaomi-pad-6-4.jpg", label: "Cạnh ngang" },
+      ] : null;
+      const galleryImages = angleViews || productImages.map((src, index) => ({
+        src,
+        label: `Ảnh ${index + 1}`,
+      }));
+      const initialImageIndex = angleViews ? null : 0;
+      const defaultImage = S.image(galleryImages[initialImageIndex]?.src || p.thumbnail);
+
       // Đọc thông số kỹ thuật
       let specifications = p.specs || {};
 
@@ -219,25 +244,27 @@ root.innerHTML = `
   <div class="detail-gallery-main">
     <img
       id="detail-main-image"
-      src="${S.image(productImages[0] || p.thumbnail)}"
+      src="${defaultImage}"
       alt="${e(p.name)}"
     >
   </div>
 
   ${
-    productImages.length > 1
+    galleryImages.length > 1
       ? `
-      <div class="detail-gallery-thumbs">
-        ${productImages.map((src, index) => `
+      <div class="detail-gallery-thumbs${angleViews ? " detail-gallery-angles" : ""}" role="group" aria-label="${angleViews ? "Góc nhìn sản phẩm" : "Ảnh sản phẩm"}">
+        ${galleryImages.map(({src, label}, index) => `
           <button
             type="button"
-            class="detail-thumb${index === 0 ? " is-active" : ""}"
+            class="detail-thumb${index === initialImageIndex ? " is-active" : ""}"
             data-gallery-index="${index}"
+            aria-pressed="${index === initialImageIndex}"
           >
             <img
               src="${S.image(src)}"
-              alt="${e(p.name)} - ảnh ${index + 1}"
+              alt="${angleViews ? "" : e(`${p.name} – ${label}`)}"
             >
+            ${angleViews ? `<span>${e(label)}</span>` : ""}
           </button>
         `).join("")}
       </div>
@@ -334,21 +361,46 @@ const reviewSection = document.createElement('section');
 reviewSection.className = 'panel product-reviews';
 root.after(reviewSection);
 import(S.url('frontend/assets/js/reviews.js')).then(m => m.mountReviews(reviewSection, p.id)).catch(() => { reviewSection.textContent = 'Chưa tải được đánh giá. Hãy tải lại trang.'; });
-// Bấm ảnh nhỏ để đổi ảnh lớn
-root.querySelectorAll("[data-gallery-index]").forEach((button) => {
-  button.addEventListener("click", () => {
-    const index = Number(button.dataset.galleryIndex);
-    const mainImage = root.querySelector("#detail-main-image");
+      const mainImage = root.querySelector("#detail-main-image");
+      const galleryButtons = root.querySelectorAll("[data-gallery-index]");
+      const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+      let activeImage = initialImageIndex;
+      let requestedImage = 0;
+      let angleAnimation;
 
-    if (!mainImage || !productImages[index]) return;
+      galleryButtons.forEach((button, index) => {
+        button.addEventListener("click", async () => {
+          const request = ++requestedImage;
+          const nextImage = angleViews && index === activeImage ? null : index;
+          if (nextImage === activeImage) return;
+          const image = galleryImages[nextImage];
 
-    mainImage.src = S.image(productImages[index]);
+          if (angleViews && image) {
+            // Keep the current angle visible until the selected photo is ready.
+            try { await button.querySelector("img").decode(); }
+            catch { return; }
+            if (request !== requestedImage) return;
+          }
 
-    root.querySelectorAll("[data-gallery-index]").forEach((thumb) => {
-      thumb.classList.toggle("is-active", thumb === button);
-    });
-  });
-});
+          const angle = nextImage === null || (activeImage !== null && nextImage < activeImage) ? -12 : 12;
+          activeImage = nextImage;
+          mainImage.src = image ? S.image(image.src) : defaultImage;
+          mainImage.alt = image ? `${p.name} – ${image.label}` : p.name;
+          galleryButtons.forEach((thumb, thumbIndex) => {
+            const isActive = thumbIndex === activeImage;
+            thumb.classList.toggle("is-active", isActive);
+            thumb.setAttribute("aria-pressed", String(isActive));
+          });
+
+          angleAnimation?.cancel();
+          if (angleViews && !reducedMotion.matches) {
+            angleAnimation = mainImage.animate([
+              { opacity: 0.35, transform: `perspective(700px) rotateY(${angle}deg) scale(0.98)` },
+              { opacity: 1, transform: "perspective(700px) rotateY(0deg) scale(1)" },
+            ], { duration: 240, easing: "ease-out" });
+          }
+        });
+      });
       try {
         const { data } = await S.api(
           "products.php?category_id=" + p.category_id + "&limit=5",

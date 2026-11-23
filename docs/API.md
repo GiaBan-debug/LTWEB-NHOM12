@@ -33,6 +33,7 @@ Frontend và backend chạy cùng origin, gửi cookie session trong mọi reque
 | orders.php | GET | page hoặc id; chỉ đơn của user hiện tại | Đăng nhập |
 | orders.php | PUT | id, action=cancel; chỉ đơn pending của chính user | Đăng nhập + CSRF |
 | admin.php | GET | resource=dashboard/products/categories/orders; products/orders nhận id | Admin |
+| admin.php | GET | resource=statistics, date_from/date_to (YYYY-MM-DD, bắt buộc) | Admin |
 | admin.php | GET | products/orders: page, search | Admin |
 | admin.php | POST | resource=products, body thông tin sản phẩm | Admin + CSRF |
 | admin.php | PUT | resource=products&id=ID, body thông tin sản phẩm | Admin + CSRF |
@@ -49,6 +50,8 @@ Giỏ giới hạn 1–99 sản phẩm mỗi mặt hàng, không vượt tồn k
 Đơn dùng COD, phí ship mặc định 30.000 ₫ dưới 2.000.000 ₫ và miễn ship từ ngưỡng đó. Giỏ trả subtotal/shipping_fee/total; đơn lưu snapshot phí, total_amount đã gồm phí. Chi tiết trả `data.items`, `total_amount`, `receiver_name`, `phone`, `address`, `note`, `status`, `payment_method`, `shipping_fee`. Item lưu tên/ảnh/giá tại lúc mua, không phụ thuộc dữ liệu sản phẩm sau này.
 
 Trạng thái hợp lệ: pending → processing → shipped → completed. pending/processing có thể chuyển cancelled và được hoàn kho trong transaction. Lặp lại trạng thái hiện tại không tạo tác dụng phụ; completed/cancelled không chuyển tiếp.
+
+Khối **Thống kê theo thời gian** được thêm riêng trên Tổng quan, không thay bộ đếm dashboard hiện có. `resource=statistics` lọc `orders.created_at`, bao gồm cả hai ngày; trả orders/completed/cancelled/revenue và date_from/date_to. Trạng thái tính tại lúc truy vấn. Revenue chỉ cộng `total_price` của đơn completed vì trường này đã bao gồm shipping_fee; không cộng phí giao lần hai. Khoảng rỗng trả các số 0; ngày không hợp lệ hoặc bắt đầu sau kết thúc trả 422. Không ghi hoặc thay đổi đơn hàng/database schema.
 
 ## Hồ sơ và đánh giá sản phẩm
 

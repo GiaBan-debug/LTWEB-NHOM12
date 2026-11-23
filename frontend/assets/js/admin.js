@@ -102,6 +102,49 @@ document.addEventListener("DOMContentLoaded", async () => {
   </p>
   <a class="button" href="${link("orders.html")}">Xem đơn hàng →</a>
 </div>`;
+      const statistics = document.createElement('section');
+      statistics.className = 'panel date-statistics';
+      statistics.setAttribute('aria-labelledby', 'date-statistics-title');
+      statistics.innerHTML = `<h2 id="date-statistics-title">Thống kê theo thời gian</h2>
+        <p class="subtle">Lọc theo ngày đặt đơn, bao gồm cả ngày bắt đầu và kết thúc. Doanh thu là tổng thanh toán của đơn hiện đã hoàn thành, gồm phí giao hàng.</p>
+        <form id="statistics-filter" class="statistics-filter">
+          <label class="field">Từ ngày<input type="date" name="date_from" required></label>
+          <label class="field">Đến ngày<input type="date" name="date_to" required></label>
+          <button class="button" type="submit">Lọc thống kê</button>
+        </form>
+        <p id="statistics-status" role="status" aria-live="polite"></p>
+        <div id="statistics-results"></div>`;
+      root.append(statistics);
+      const filter = statistics.querySelector('form');
+      const output = statistics.querySelector('#statistics-results');
+      const status = statistics.querySelector('#statistics-status');
+      const today = new Date();
+      const localDate = date => `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
+      filter.elements.date_from.value = localDate(new Date(today.getFullYear(), today.getMonth(), 1));
+      filter.elements.date_to.value = localDate(today);
+      let reportRequest = 0;
+      async function loadStatistics() {
+        const from = filter.elements.date_from.value, to = filter.elements.date_to.value;
+        if (!from || !to || from > to) { status.textContent = 'Chọn ngày bắt đầu không sau ngày kết thúc.'; return; }
+        const requestId = ++reportRequest;
+        const button = filter.querySelector('button');
+        button.disabled = true; output.innerHTML = ''; status.textContent = 'Đang tải thống kê…';
+        try {
+          const {data} = await admin('statistics', {}, '&date_from='+encodeURIComponent(from)+'&date_to='+encodeURIComponent(to));
+          if (requestId !== reportRequest) return;
+          const displayDate = date => date.split('-').reverse().join('/');
+          status.textContent = `Kết quả từ ${displayDate(data.date_from)} đến ${displayDate(data.date_to)}${data.orders === 0 ? ' — Không có đơn hàng trong khoảng này.' : '.'}`;
+          output.innerHTML = '<div class="stat-grid">' + [
+            ['Tổng đơn đặt', data.orders], ['Đơn hoàn thành', data.completed],
+            ['Đơn đã hủy', data.cancelled], ['Doanh thu đơn hoàn thành', S.money(data.revenue)],
+          ].map(([label,value]) => `<div class="panel stat"><small>${e(label)}</small><strong>${e(String(value))}</strong></div>`).join('') + '</div>';
+        } catch (error) {
+          if (requestId === reportRequest) status.textContent = error.message;
+          if (error.status === 401) S.login();
+        } finally { if (requestId === reportRequest) button.disabled = false; }
+      }
+      filter.addEventListener('submit', event => { event.preventDefault(); loadStatistics(); });
+      loadStatistics();
     }
 
     /* ============================================================

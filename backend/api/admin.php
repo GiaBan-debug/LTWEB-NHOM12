@@ -24,7 +24,7 @@ $method   = $_SERVER['REQUEST_METHOD'];
 $resource = $_GET['resource'] ?? 'dashboard';
 $id       = positiveInt($_GET['id'] ?? null);
 
-if (!in_array($resource, ['dashboard', 'products', 'categories', 'orders'], true)) {
+if (!in_array($resource, ['dashboard', 'statistics', 'products', 'categories', 'orders'], true)) {
     throw new ApiException('Không tìm thấy chức năng.', 404);
 }
 
@@ -32,6 +32,28 @@ if (!in_array($resource, ['dashboard', 'products', 'categories', 'orders'], true
    GET — đọc dữ liệu
    ============================================================== */
 if ($method === 'GET') {
+
+    /* Independent date report; existing dashboard totals stay unchanged. */
+    if ($resource === 'statistics') {
+        $from = inputString($_GET, 'date_from', 10, true);
+        $to = inputString($_GET, 'date_to', 10, true);
+        foreach ([$from, $to] as $value) {
+            $date = DateTimeImmutable::createFromFormat('!Y-m-d', $value);
+            if (!$date || $date->format('Y-m-d') !== $value || substr($value, 0, 4) < '1000') {
+                throw new ApiException('Ngày thống kê phải hợp lệ, định dạng YYYY-MM-DD.', 422);
+            }
+        }
+        if ($from > $to) throw new ApiException('Ngày bắt đầu không được sau ngày kết thúc.', 422);
+        $stmt = $db->prepare("SELECT COUNT(*) AS orders,
+            COALESCE(SUM(status = 'completed'), 0) AS completed,
+            COALESCE(SUM(status = 'cancelled'), 0) AS cancelled,
+            COALESCE(SUM(CASE WHEN status = 'completed' THEN total_price ELSE 0 END), 0) AS revenue
+            FROM orders WHERE created_at >= ? AND created_at <= ?");
+        $stmt->execute([$from . ' 00:00:00', $to . ' 23:59:59']);
+        $report = $stmt->fetch();
+        foreach (['orders', 'completed', 'cancelled', 'revenue'] as $key) $report[$key] = (int) $report[$key];
+        jsonResponse(true, $report + ['date_from' => $from, 'date_to' => $to]);
+    }
 
     /* ---- Dashboard ---- */
     if ($resource === 'dashboard') {

@@ -360,7 +360,7 @@
   <h3>Thông tin liên hệ</h3>
   <p>BTA STORE</p>
   <p>Địa chỉ: Số 2, đường Võ Oanh, phường Thạnh Mỹ Tây, TP.HCM.</p>
-  <p>Hotline: 0935174331</p>
+  <p>Hotline: 0916990520</p>
   <p>Email: bta-store@gmail.com</p>
   <p>Giờ hỗ trợ: 08:00 - 22:00</p>
   </div>
@@ -370,12 +370,40 @@
 </div>`;
   }
 
+  function mountContact() {
+    if (location.pathname.includes('/admin/') || document.querySelector('#store-contact')) return;
+    const contact = document.createElement('aside');
+    contact.id = 'store-contact';
+    contact.className = 'store-contact';
+    contact.setAttribute('aria-label', 'Liên hệ cửa hàng');
+    contact.innerHTML = `<div id="store-contact-panel" class="store-contact__panel" hidden>
+      <strong>Liên hệ BTA STORE</strong>
+      <p>Hỗ trợ từ 08:00 – 22:00</p>
+      <a href="tel:0916990520">Gọi cửa hàng: 0916 990 520</a>
+      <a href="mailto:bta-store@gmail.com">Email: bta-store@gmail.com</a>
+      <a href="${page('about')}">Địa chỉ & thông tin cửa hàng →</a>
+    </div><button type="button" class="store-contact__toggle" aria-expanded="false" aria-controls="store-contact-panel"><span aria-hidden="true">☎</span> Liên hệ cửa hàng</button>`;
+    document.body.append(contact);
+    const button = contact.querySelector('button');
+    const panel = contact.querySelector('#store-contact-panel');
+    const close = () => { panel.hidden = true; button.setAttribute('aria-expanded', 'false'); };
+    button.addEventListener('click', () => {
+      panel.hidden = !panel.hidden;
+      button.setAttribute('aria-expanded', String(!panel.hidden));
+    });
+    document.addEventListener('click', event => { if (!contact.contains(event.target)) close(); });
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape' && !panel.hidden) { close(); button.focus(); }
+    });
+  }
+
   /* ============================================================
      DOMContentLoaded — global event delegation + mount
      ============================================================ */
   document.addEventListener("DOMContentLoaded", () => {
     mountHeader();
     mountFooter();
+    mountContact();
     updateCartCount();
 
     /* Reload button in error notices */

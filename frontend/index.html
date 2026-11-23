@@ -95,15 +95,56 @@
     </div>
 
     <!-- ===== DANH MỤC ===== -->
-    <section>
+    <section class="shop-needs" aria-labelledby="home-category-title">
       <div class="section-heading">
         <div>
           <span class="eyebrow">DANH MỤC NỔI BẬT</span>
-          <h2>Bạn đang tìm gì?</h2>
+          <h2 id="home-category-title">Bạn đang tìm gì?</h2>
         </div>
         <a class="section-link" href="pages/users/categories.html">
           Xem tất cả
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
+        </a>
+      </div>
+      <form id="shop-needs-form" class="panel shop-needs-form" action="pages/users/products.html" method="get">
+        <label class="field">
+          Bạn muốn tìm gì?
+          <input type="search" name="search" maxlength="150" placeholder="Ví dụ: Xiaomi, sạc nhanh">
+        </label>
+        <label class="field">
+          Loại sản phẩm
+          <select name="category_id">
+            <option value="">Tất cả danh mục</option>
+          </select>
+        </label>
+        <label class="field">
+          Ngân sách tối đa (₫)
+          <input type="number" name="max_price" inputmode="numeric" min="0" max="1000000000" step="1" placeholder="Không giới hạn">
+        </label>
+        <button class="button" type="submit">Tìm sản phẩm</button>
+      </form>
+      <h3 class="shop-needs-quick-title">Gợi ý nhanh</h3>
+      <div class="shop-needs-grid">
+        <a class="shop-need shop-need--study" href="pages/users/products.html?category_slug=may-tinh-bang">
+          <div class="shop-need-copy">
+            <h3>Học tập và ghi chú</h3>
+            <span class="shop-need-link">Xem máy tính bảng <span aria-hidden="true">→</span></span>
+          </div>
+          <img src="../uploads/products/xiaomi-pad-6.jpg" alt="" loading="lazy" decoding="async">
+        </a>
+        <a class="shop-need shop-need--work" href="pages/users/products.html?category_slug=laptop">
+          <div class="shop-need-copy">
+            <h3>Làm việc và học online</h3>
+            <span class="shop-need-link">Xem laptop <span aria-hidden="true">→</span></span>
+          </div>
+          <img src="../uploads/products/macbook-air-m3.jpg" alt="" loading="lazy" decoding="async">
+        </a>
+        <a class="shop-need shop-need--desk" href="pages/users/products.html?category_slug=phu-kien">
+          <div class="shop-need-copy">
+            <h3>Nâng cấp góc làm việc</h3>
+            <span class="shop-need-link">Xem phụ kiện <span aria-hidden="true">→</span></span>
+          </div>
+          <img src="../uploads/products/keychron-k2-pro.jpg" alt="" loading="lazy" decoding="async">
         </a>
       </div>
       <div id="home-categories" class="category-grid">
